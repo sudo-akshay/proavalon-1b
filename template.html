@@ -1,0 +1,475 @@
+<title>ProAvalon 1B</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper:#f6f7f9; --surface:#ffffff; --ink:#1a1d24; --ink-soft:#4d5566;
+    --ink-mute:#7b8494; --rule:#e2e5ea; --rule-soft:#eef0f4;
+    --res:#2e6fd9; --res-ci:#2e6fd92e; --spy:#c0392b; --spy-ci:#c0392b2e;
+    --track:#e8ebf0; --neutral:#8d95a6;
+    --shadow:0 1px 2px rgba(26,29,36,.06), 0 8px 24px rgba(26,29,36,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#14171c; --surface:#1a1e25; --ink:#e8eaf0; --ink-soft:#b3bac7;
+      --ink-mute:#7f8899; --rule:#2b313b; --rule-soft:#232830;
+      --res:#5b95e8; --res-ci:#5b95e83d; --spy:#e2685c; --spy-ci:#e2685c3d;
+      --track:#262c35; --neutral:#79839a;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#14171c; --surface:#1a1e25; --ink:#e8eaf0; --ink-soft:#b3bac7;
+    --ink-mute:#7f8899; --rule:#2b313b; --rule-soft:#232830;
+    --res:#5b95e8; --res-ci:#5b95e83d; --spy:#e2685c; --spy-ci:#e2685c3d;
+    --track:#262c35; --neutral:#79839a;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin:0; background:var(--paper); color:var(--ink);
+    font:400 15px/1.55 "IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:1120px; margin:0 auto; padding:40px 28px 80px; }
+
+  .masthead {
+    display:flex; align-items:flex-end; justify-content:space-between;
+    gap:24px; flex-wrap:wrap; border-bottom:2px solid var(--ink); padding-bottom:16px;
+  }
+  h1 {
+    font-family:"Bodoni Moda",Georgia,serif; font-weight:600;
+    font-size:clamp(38px,6vw,62px); line-height:.95; margin:0;
+    letter-spacing:-.01em; text-wrap:balance;
+  }
+  .kicker, h3 {
+    font:500 11px/1 "IBM Plex Mono",ui-monospace,monospace;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--ink-mute); margin:0 0 14px;
+  }
+  .stamp { font:400 12px/1.6 "IBM Plex Mono",monospace; color:var(--ink-mute); text-align:right; }
+  section { margin-top:46px; }
+  .lede { max-width:64ch; color:var(--ink-soft); margin:10px 0 20px; }
+  .coinflip { position:absolute; left:50%; top:-3px; bottom:-3px; width:1px;
+              background:var(--ink-mute); opacity:.5; }
+
+  /* ---- group headline ---- */
+  .headline {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+    gap:1px; background:var(--rule); border:1px solid var(--rule);
+    border-radius:10px; overflow:hidden; margin-top:18px;
+  }
+  .hl { background:var(--surface); padding:18px 20px; }
+  .hl-num {
+    font-family:"Bodoni Moda",Georgia,serif; font-weight:600; font-size:40px;
+    line-height:1; font-variant-numeric:tabular-nums; display:block;
+  }
+  .hl-num.res { color:var(--res); }
+  .hl-num.spy { color:var(--spy); }
+  .hl-cap { font-size:12.5px; color:var(--ink-mute); display:block; margin-top:8px; line-height:1.45; }
+
+  /* ---- leaderboard ---- */
+  .tablewrap { overflow-x:auto; border:1px solid var(--rule); border-radius:10px;
+               background:var(--surface); box-shadow:var(--shadow); }
+  table { border-collapse:collapse; width:100%; min-width:840px; }
+  th {
+    font:500 10px/1 "IBM Plex Mono",monospace; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--ink-mute); text-align:right;
+    padding:14px 12px; border-bottom:1px solid var(--rule); white-space:nowrap;
+  }
+  th.l, td.who, td.tier, td.title { text-align:left; }
+  td.title { font-size:12.5px; color:var(--ink-soft); white-space:nowrap; }
+  td.tier { outline:none; }
+  td { padding:11px 12px; border-bottom:1px solid var(--rule-soft); font-size:14px; }
+  tr:last-child td { border-bottom:none; }
+  tr.thin td { opacity:.55; }
+  td.rank { font:400 12px/1 "IBM Plex Mono",monospace; color:var(--ink-mute); width:34px; }
+  td.who { font-weight:500; white-space:nowrap; }
+  td.num { text-align:right; font-family:"IBM Plex Mono",monospace; font-size:13px;
+           font-variant-numeric:tabular-nums; white-space:nowrap; }
+  td.strong { font-weight:500; }
+  td.res { color:var(--res); }
+  td.spy { color:var(--spy); }
+  td.lean { color:var(--ink-mute); }
+  td.barcell { width:34%; min-width:150px; outline:none; }
+  .mini { position:relative; height:13px; background:var(--track); border-radius:3px; }
+  .mini-ci { position:absolute; top:0; height:13px; background:var(--neutral);
+             opacity:.3; border-radius:2px; }
+  .mini-fill { position:absolute; left:0; top:0; height:13px; background:var(--neutral);
+               border-radius:3px 4px 4px 3px; box-shadow:0 0 0 2px var(--surface); }
+  .chip {
+    display:inline-block; padding:2px 8px; border-radius:999px;
+    border:1px solid var(--rule); background:var(--paper);
+    font:500 11px/1.6 "IBM Plex Mono",monospace; color:var(--ink-soft);
+    font-variant-numeric:tabular-nums; white-space:nowrap;
+  }
+
+  /* ---- tier board ---- */
+  .tiers { border:1px solid var(--rule); border-radius:10px; overflow:hidden;
+           background:var(--surface); box-shadow:var(--shadow); }
+  .tier-row {
+    display:grid; grid-template-columns:104px 96px 1fr; align-items:center;
+    gap:14px; padding:11px 18px; border-bottom:1px solid var(--rule-soft);
+  }
+  .tier-row:last-child { border-bottom:none; }
+  .tier-row.empty { opacity:.4; }
+  .tier-row.unranked { background:var(--paper); }
+  .tier-name { font:500 11px/1 "IBM Plex Mono",monospace; letter-spacing:.12em;
+               text-transform:uppercase; }
+  .tier-span { font:400 11px/1 "IBM Plex Mono",monospace; color:var(--ink-mute);
+               font-variant-numeric:tabular-nums; }
+  .tier-chips { display:flex; flex-wrap:wrap; gap:7px; }
+  .tchip {
+    display:inline-flex; align-items:baseline; gap:6px; padding:3px 10px;
+    border-radius:999px; border:1px solid var(--rule); background:var(--paper);
+    font-size:12.5px; font-weight:500;
+  }
+  .tchip em { font:400 10.5px/1 "IBM Plex Mono",monospace; font-style:normal;
+              color:var(--ink-mute); font-variant-numeric:tabular-nums; }
+
+  /* ---- dumbbell ---- */
+  .legend { display:flex; gap:18px; align-items:center; flex-wrap:wrap;
+            margin:0 0 18px; font-size:12.5px; color:var(--ink-soft); }
+  .legend i { display:inline-block; width:11px; height:11px; border-radius:50%;
+              margin-right:6px; vertical-align:-1px; }
+  .k-res { background:var(--res); }
+  .k-spy { background:var(--spy); }
+  .k-ci { background:var(--neutral); opacity:.35; border-radius:2px !important; }
+  .db { display:flex; flex-direction:column; gap:3px; }
+  .db-row { display:grid; grid-template-columns:130px 1fr 40px; align-items:center;
+            gap:14px; padding:5px 0; }
+  .db-row.thin { opacity:.55; }
+  .db-name { font-size:13px; color:var(--ink-soft); white-space:nowrap;
+             overflow:hidden; text-overflow:ellipsis; }
+  .db-track { position:relative; height:22px; }
+  .db-track::before {
+    content:""; position:absolute; left:0; right:0; top:50%; height:1px;
+    background:var(--rule); }
+  .db-link { position:absolute; top:50%; height:2px; margin-top:-1px;
+             background:var(--neutral); opacity:.55; }
+  .db-ci { position:absolute; top:50%; height:6px; margin-top:-3px; border-radius:3px; }
+  .db-ci.res { background:var(--res-ci); }
+  .db-ci.spy { background:var(--spy-ci); }
+  .db-dot {
+    position:absolute; top:50%; width:11px; height:11px; margin:-5.5px 0 0 -5.5px;
+    border-radius:50%; box-shadow:0 0 0 2px var(--surface); outline:none;
+  }
+  .db-dot.res { background:var(--res); }
+  .db-dot.spy { background:var(--spy); }
+  .db-dot:hover, .db-dot:focus-visible { box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--rule); }
+  .db-gap { font:500 12px/1 "IBM Plex Mono",monospace; color:var(--ink-mute);
+            text-align:right; font-variant-numeric:tabular-nums; }
+  .axis { display:grid; grid-template-columns:130px 1fr 40px; gap:14px; margin-top:8px; }
+  .axis-scale { display:flex; justify-content:space-between;
+                font:400 10.5px/1 "IBM Plex Mono",monospace; color:var(--ink-mute); }
+
+  /* ---- player cards ---- */
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(440px,1fr)); gap:18px; }
+  @media (max-width:520px) { .cards { grid-template-columns:1fr; } }
+  .pcard { background:var(--surface); border:1px solid var(--rule); border-radius:10px;
+           padding:20px 22px 18px; box-shadow:var(--shadow); }
+  .pcard header { display:flex; justify-content:space-between; align-items:baseline; gap:16px; }
+  .pname { font-family:"Bodoni Moda",Georgia,serif; font-weight:600; font-size:24px;
+           margin:0; letter-spacing:-.01em; text-transform:none; color:var(--ink);
+           overflow:hidden; text-overflow:ellipsis; }
+  .phero { display:flex; align-items:baseline; gap:9px; white-space:nowrap; }
+  .phero-num { font-family:"Bodoni Moda",Georgia,serif; font-weight:600; font-size:30px;
+               font-variant-numeric:tabular-nums; }
+  .phero-cap { font:400 11px/1.45 "IBM Plex Mono",monospace; color:var(--ink-mute); text-align:right; }
+  .ci-text { font-size:10.5px; }
+  .pmeta { margin:8px 0 16px; font-size:12px; color:var(--ink-mute);
+           display:flex; align-items:center; gap:9px; flex-wrap:wrap;
+           padding-bottom:14px; border-bottom:1px solid var(--rule-soft); }
+
+  .rates { display:flex; flex-direction:column; gap:8px; }
+  .rate { display:grid; grid-template-columns:82px 1fr 40px 52px; align-items:center;
+          gap:10px; border-radius:4px; outline:none; }
+  .rate:hover, .rate:focus-visible { box-shadow:0 0 0 2px var(--rule); }
+  .rate.thin { opacity:.55; }
+  .rate-label { font-size:12.5px; color:var(--ink-soft); }
+  .rate-track { position:relative; height:14px; background:var(--track); border-radius:3px; }
+  .ci { position:absolute; top:0; height:14px; border-radius:2px; }
+  .fill { position:absolute; left:0; top:0; height:14px; border-radius:3px 4px 4px 3px;
+          min-width:3px; box-shadow:0 0 0 2px var(--surface); }
+  [data-side="res"] .fill { background:var(--res); }
+  [data-side="res"] .ci { background:var(--res-ci); }
+  [data-side="spy"] .fill { background:var(--spy); }
+  [data-side="spy"] .ci { background:var(--spy-ci); }
+  .rate-val { font:500 12.5px/1 "IBM Plex Mono",monospace; text-align:right;
+              font-variant-numeric:tabular-nums; }
+  .rate-n { font:400 10.5px/1 "IBM Plex Mono",monospace; color:var(--ink-mute);
+            text-align:right; font-variant-numeric:tabular-nums; }
+
+  .sizes { display:flex; gap:8px; align-items:flex-end; margin-top:18px;
+           padding-top:16px; border-top:1px solid var(--rule-soft); }
+  .size { flex:1; text-align:center; outline:none; border-radius:4px; }
+  .size.thin { opacity:.45; }
+  .size:hover, .size:focus-visible { box-shadow:0 0 0 2px var(--rule); }
+  .size-bar { height:46px; background:var(--track); border-radius:3px; display:flex;
+              align-items:flex-end; overflow:hidden; margin-bottom:5px; }
+  .size-bar > div { width:100%; background:var(--neutral); border-radius:3px 3px 0 0; min-height:2px; }
+  .size-n { font:500 11px/1.3 "IBM Plex Mono",monospace; }
+  .size-games { font:400 10px/1.3 "IBM Plex Mono",monospace; color:var(--ink-mute); }
+
+  th button {
+    font:500 10px/1 "IBM Plex Mono",monospace; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--ink-mute); background:none; border:0;
+    padding:0; cursor:pointer; white-space:nowrap; font-feature-settings:inherit;
+  }
+  th button:hover { color:var(--ink); }
+  th button:focus-visible { outline:2px solid var(--res); outline-offset:3px; border-radius:2px; }
+  th button::after { content:"\2009\00a0"; opacity:0; }
+  th[aria-sort] button { color:var(--ink); }
+  th[aria-sort="descending"] button::after { content:"\2009\25BC"; opacity:.7; }
+  th[aria-sort="ascending"] button::after { content:"\2009\25B2"; opacity:.7; }
+
+  .titles { display:grid; grid-template-columns:repeat(auto-fit,minmax(258px,1fr)); gap:14px; }
+  .tcard { background:var(--surface); border:1px solid var(--rule); border-radius:10px;
+           padding:18px 20px 14px; box-shadow:var(--shadow); display:flex;
+           flex-direction:column; gap:6px; }
+  .tcard h4 { font-family:"Bodoni Moda",Georgia,serif; font-weight:600; font-size:21px;
+              margin:0; letter-spacing:-.01em; text-wrap:balance; }
+  .tholder { margin:0; font:500 11px/1 "IBM Plex Mono",monospace; letter-spacing:.12em;
+             text-transform:uppercase; color:var(--ink-mute); }
+  .tev { margin:4px 0 0; font-size:13px; color:var(--ink-soft); line-height:1.5; }
+  .tmarks { margin:6px 0 0; display:flex; gap:6px; flex-wrap:wrap; min-height:0; }
+  .seal { font:500 9.5px/1.7 "IBM Plex Mono",monospace; letter-spacing:.1em;
+          text-transform:uppercase; padding:2px 8px; border-radius:999px;
+          border:1px solid var(--ink-soft); color:var(--ink-soft); cursor:help; }
+  .seal.soft { border-style:dashed; border-color:var(--rule); color:var(--ink-mute); }
+  .pepithet { margin:2px 0 0; font:500 10.5px/1 "IBM Plex Mono",monospace;
+              letter-spacing:.1em; text-transform:uppercase; color:var(--ink-mute); }
+
+  .panel { background:var(--surface); border:1px solid var(--rule); border-radius:10px;
+           padding:20px 22px; box-shadow:var(--shadow); }
+  .chartbox { background:var(--surface); border:1px solid var(--rule); border-radius:10px;
+              padding:14px 16px 6px; box-shadow:var(--shadow); overflow-x:auto; }
+  .funnel { display:block; width:100%; min-width:600px; height:auto; }
+  .funnel circle { outline:none; }
+  .funnel circle:hover, .funnel circle:focus-visible { stroke-width:3; }
+  .rate.wide { grid-template-columns:100px 1fr 44px 68px; }
+  .db-name em { font-style:normal; color:var(--ink-mute);
+                font:400 10.5px/1 "IBM Plex Mono",monospace; margin-left:6px; }
+
+  .caveats { border-left:2px solid var(--rule); padding:2px 0 2px 18px;
+             color:var(--ink-soft); font-size:14px; max-width:70ch; }
+  .caveats p { margin:0 0 11px; }
+  .caveats strong { color:var(--ink); }
+
+  #tip {
+    position:fixed; z-index:20; pointer-events:none; opacity:0;
+    transition:opacity .12s ease; max-width:290px;
+    background:var(--ink); color:var(--paper); padding:7px 10px; border-radius:6px;
+    font:400 12px/1.45 "IBM Plex Mono",monospace;
+  }
+  @media (prefers-reduced-motion:reduce) { * { transition:none !important; } }
+</style>
+
+<div class="wrap">
+  <div class="masthead">
+    <div>
+      <p class="kicker">$n_players players · $total_games games</p>
+      <h1>ProAvalon 1B</h1>
+    </div>
+    <p class="stamp">snapshot<br>$stamp$rating_note</p>
+  </div>
+
+  <section>
+    <h3>The table's tell</h3>
+    <div class="headline">
+      <div class="hl">
+        <span class="hl-num res">$grp_res</span>
+        <span class="hl-cap">win rate on <strong>Resistance</strong><br>$res_seats loyal seats played</span>
+      </div>
+      <div class="hl">
+        <span class="hl-num spy">$grp_spy</span>
+        <span class="hl-cap">win rate on <strong>Spy</strong><br>$spy_seats evil seats played</span>
+      </div>
+      <div class="hl">
+        <span class="hl-num">+$grp_gap</span>
+        <span class="hl-cap">point swing toward evil across the whole group</span>
+      </div>
+      <div class="hl">
+        <span class="hl-num">$spy_lean/$n_rated</span>
+        <span class="hl-cap">of the $n_rated players who have played both sides win more often as a spy</span>
+      </div>
+    </div>
+    <p class="lede" style="margin-top:18px">Seats are counted per player, so a game you
+      played together is counted once for each of you — these are the group's seats, not
+      a tally of distinct games.</p>
+  </section>
+
+  <section>
+    <h3>Standing</h3>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th class="l"><button type="button" data-col="1" data-type="text">player</button></th>
+            <th class="l"><button type="button" data-col="2" data-type="text">title</button></th>
+            <th class="l"><button type="button" data-col="3">rank</button></th>
+            <th><button type="button" data-col="4">games</button></th>
+            <th class="l"><button type="button" data-col="5">win rate · 95% CI</button></th>
+            <th><button type="button" data-col="6">win%</button></th>
+            <th><button type="button" data-col="7">res</button></th>
+            <th><button type="button" data-col="8">spy</button></th>
+          </tr>
+        </thead>
+        <tbody>$board</tbody>
+      </table>
+    </div>
+    <p class="lede" style="margin-top:14px">Click any column to sort. Ordered by rank, not by
+      win rate — a win rate over 30-odd games moves on a good night. Rows under 15 games are
+      faded. Hover a rank to see the exact rating where the site discloses one.</p>
+  </section>
+
+  <section>
+    <h3>Titles</h3>
+    <p class="lede">One earned name each, taken from whichever measure that player sits
+      furthest out on. A title is only handed over if its wording is literally true of the
+      holder — and where someone is the outright extreme in the group, it says so.</p>
+    <div class="titles">$titles</div>
+  </section>
+
+  <section>
+    <h3>Brackets</h3>
+    <p class="lede">ProAvalon shows an exact rating only on your own profile; everyone else
+      resolves to a bracket, so a name here means "somewhere in this range".</p>
+    <div class="tiers">$tiers</div>
+  </section>
+
+  <section>
+    <h3>Is anyone actually good?</h3>
+    <p class="lede">Every player's win rate against the number of games behind it. The
+      shaded funnel is the range a pure coin flip produces 95% of the time — it is wide on
+      the left because a handful of games proves nothing, and narrows as games accumulate.
+      A hollow dot sits inside the funnel: that record is indistinguishable from luck.
+      <strong>$n_outside of $n_players clears it — $outside_names.</strong></p>
+    <div class="chartbox">$funnel</div>
+  </section>
+
+  <section>
+    <h3>Which seat wins</h3>
+    <p class="lede">Every seat the group has been dealt, pooled across all $n_players
+      players. Individually these roles are noise; pooled, the split is unmistakable —
+      the three loyal roles land at 38–41%, the three evil roles at 57–61%.</p>
+    <div class="legend">
+      <span><i class="k-res"></i>Resistance side</span>
+      <span><i class="k-spy"></i>Spy side</span>
+      <span><i class="k-ci"></i>95% confidence interval</span>
+      <span>│ 50% coin flip</span>
+    </div>
+    <div class="panel"><div class="rates">$group_roles</div></div>
+  </section>
+
+  <section>
+    <h3>Loyal vs evil, per player</h3>
+    <p class="lede">Each row is one player: the blue dot is their win rate on Resistance, the
+      red dot on Spy, and the pale bar behind each is its 95% interval. Sorted by how far
+      evil they lean.</p>
+    <div class="legend">
+      <span><i class="k-res"></i>Resistance</span>
+      <span><i class="k-spy"></i>Spy</span>
+      <span><i class="k-ci"></i>95% confidence interval</span>
+      <span>│ 50% coin flip</span>
+    </div>
+    <div class="db">$dumbbell</div>
+    <div class="axis"><div></div>
+      <div class="axis-scale"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+      <div></div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Loyal vs evil, by table size</h3>
+    <p class="lede">The same read applied to table sizes. Five-player games are where the
+      group's spies are most dominant; six-player games are the one format that runs the
+      other way, on the thinnest evidence here.</p>
+    <div class="panel"><div class="db">$size_rows</div>
+      <div class="axis"><div></div>
+        <div class="axis-scale"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+        <div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Player sheets</h3>
+    <p class="lede">Role and table-size splits. Nearly everything at this depth is under
+      the 8-game line and drawn faded — read the shape, not the number.</p>
+    <div class="cards">$cards</div>
+  </section>
+
+  <section>
+    <h3>What this can't tell you</h3>
+    <div class="caveats">
+      <p><strong>No per-game history exists outside their server.</strong> ProAvalon stores
+        mission and vote history per game but exposes no route to read it — so who wins
+        <em>with</em> whom, who reads whom as Merlin, and how assassinations actually went
+        are unanswerable from here. Only cumulative per-player counters are public.</p>
+      <p><strong>These aren't only games against each other.</strong> Every figure counts a
+        player's whole ProAvalon record, including games with strangers.</p>
+      <p><strong>Faded means under-sampled.</strong> A 100% win rate over two games is not a
+        strength; its interval runs from roughly 34% to 100%.</p>
+      <p><strong>Overlapping intervals mean the gap isn't real yet.</strong> Two players ten
+        points apart at these sample sizes are, statistically, tied.</p>
+    </div>
+  </section>
+</div>
+
+<div id="tip" role="status"></div>
+<script>
+  (function () {
+    var tip = document.getElementById('tip');
+    function show(e) {
+      var el = e.target.closest('[data-tip]');
+      if (!el) return;
+      tip.textContent = el.getAttribute('data-tip');
+      tip.style.opacity = '1';
+      var r = el.getBoundingClientRect();
+      var x = (e.clientX || r.left + r.width / 2) + 14;
+      var y = (e.clientY || r.top) - 10;
+      tip.style.left = Math.min(x, window.innerWidth - tip.offsetWidth - 12) + 'px';
+      tip.style.top = Math.max(8, y - tip.offsetHeight) + 'px';
+    }
+    function hide() { tip.style.opacity = '0'; }
+    document.addEventListener('mousemove', function (e) {
+      e.target.closest('[data-tip]') ? show(e) : hide();
+    });
+    document.addEventListener('focusin', show);
+    document.addEventListener('focusout', hide);
+  })();
+
+  (function () {
+    var table = document.querySelector('.tablewrap table');
+    if (!table) return;
+    var tbody = table.tBodies[0];
+
+    function sortBy(th, col, type) {
+      var asc = th.getAttribute('aria-sort') !== 'ascending';
+      var rows = Array.prototype.slice.call(tbody.rows);
+      rows.sort(function (a, b) {
+        var x = a.cells[col].getAttribute('data-v');
+        var y = b.cells[col].getAttribute('data-v');
+        if (type === 'text') return asc ? x.localeCompare(y) : y.localeCompare(x);
+        return asc ? x - y : y - x;
+      });
+      rows.forEach(function (r, i) {
+        r.cells[0].textContent = i + 1;   // the # column is position, not identity
+        tbody.appendChild(r);
+      });
+      table.querySelectorAll('th').forEach(function (h) { h.removeAttribute('aria-sort'); });
+      th.setAttribute('aria-sort', asc ? 'ascending' : 'descending');
+    }
+
+    table.querySelectorAll('th button').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        sortBy(btn.parentNode, +btn.dataset.col, btn.dataset.type);
+      });
+    });
+    // The page ships sorted by rating, descending — say so in the header.
+    var rating = table.querySelector('th button[data-col="3"]');
+    if (rating) rating.parentNode.setAttribute('aria-sort', 'descending');
+  })();
+</script>

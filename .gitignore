@@ -1,0 +1,5 @@
+.secrets/
+stats.db
+*.pyc
+__pycache__/
+logs/

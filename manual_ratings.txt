@@ -1,0 +1,4 @@
+# Exact ratings your friends read off their OWN profile page (proavalon.com/profile/<them>).
+# The site shows a player's number only to that player, so these can't be fetched — only told.
+# Format:  username = rating  # date they read it
+# Example: saicha = 1472  # 2026-09-14

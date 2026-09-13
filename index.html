@@ -1,0 +1,2146 @@
+<title>ProAvalon 1B</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper:#f6f7f9; --surface:#ffffff; --ink:#1a1d24; --ink-soft:#4d5566;
+    --ink-mute:#7b8494; --rule:#e2e5ea; --rule-soft:#eef0f4;
+    --res:#2e6fd9; --res-ci:#2e6fd92e; --spy:#c0392b; --spy-ci:#c0392b2e;
+    --track:#e8ebf0; --neutral:#8d95a6;
+    --shadow:0 1px 2px rgba(26,29,36,.06), 0 8px 24px rgba(26,29,36,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#14171c; --surface:#1a1e25; --ink:#e8eaf0; --ink-soft:#b3bac7;
+      --ink-mute:#7f8899; --rule:#2b313b; --rule-soft:#232830;
+      --res:#5b95e8; --res-ci:#5b95e83d; --spy:#e2685c; --spy-ci:#e2685c3d;
+      --track:#262c35; --neutral:#79839a;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#14171c; --surface:#1a1e25; --ink:#e8eaf0; --ink-soft:#b3bac7;
+    --ink-mute:#7f8899; --rule:#2b313b; --rule-soft:#232830;
+    --res:#5b95e8; --res-ci:#5b95e83d; --spy:#e2685c; --spy-ci:#e2685c3d;
+    --track:#262c35; --neutral:#79839a;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin:0; background:var(--paper); color:var(--ink);
+    font:400 15px/1.55 "IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:1120px; margin:0 auto; padding:40px 28px 80px; }
+
+  .masthead {
+    display:flex; align-items:flex-end; justify-content:space-between;
+    gap:24px; flex-wrap:wrap; border-bottom:2px solid var(--ink); padding-bottom:16px;
+  }
+  h1 {
+    font-family:"Bodoni Moda",Georgia,serif; font-weight:600;
+    font-size:clamp(38px,6vw,62px); line-height:.95; margin:0;
+    letter-spacing:-.01em; text-wrap:balance;
+  }
+  .kicker, h3 {
+    font:500 11px/1 "IBM Plex Mono",ui-monospace,monospace;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--ink-mute); margin:0 0 14px;
+  }
+  .stamp { font:400 12px/1.6 "IBM Plex Mono",monospace; color:var(--ink-mute); text-align:right; }
+  section { margin-top:46px; }
+  .lede { max-width:64ch; color:var(--ink-soft); margin:10px 0 20px; }
+  .coinflip { position:absolute; left:50%; top:-3px; bottom:-3px; width:1px;
+              background:var(--ink-mute); opacity:.5; }
+
+  /* ---- group headline ---- */
+  .headline {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+    gap:1px; background:var(--rule); border:1px solid var(--rule);
+    border-radius:10px; overflow:hidden; margin-top:18px;
+  }
+  .hl { background:var(--surface); padding:18px 20px; }
+  .hl-num {
+    font-family:"Bodoni Moda",Georgia,serif; font-weight:600; font-size:40px;
+    line-height:1; font-variant-numeric:tabular-nums; display:block;
+  }
+  .hl-num.res { color:var(--res); }
+  .hl-num.spy { color:var(--spy); }
+  .hl-cap { font-size:12.5px; color:var(--ink-mute); display:block; margin-top:8px; line-height:1.45; }
+
+  /* ---- leaderboard ---- */
+  .tablewrap { overflow-x:auto; border:1px solid var(--rule); border-radius:10px;
+               background:var(--surface); box-shadow:var(--shadow); }
+  table { border-collapse:collapse; width:100%; min-width:840px; }
+  th {
+    font:500 10px/1 "IBM Plex Mono",monospace; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--ink-mute); text-align:right;
+    padding:14px 12px; border-bottom:1px solid var(--rule); white-space:nowrap;
+  }
+  th.l, td.who, td.tier, td.title { text-align:left; }
+  td.title { font-size:12.5px; color:var(--ink-soft); white-space:nowrap; }
+  td.tier { outline:none; }
+  td { padding:11px 12px; border-bottom:1px solid var(--rule-soft); font-size:14px; }
+  tr:last-child td { border-bottom:none; }
+  tr.thin td { opacity:.55; }
+  td.rank { font:400 12px/1 "IBM Plex Mono",monospace; color:var(--ink-mute); width:34px; }
+  td.who { font-weight:500; white-space:nowrap; }
+  td.num { text-align:right; font-family:"IBM Plex Mono",monospace; font-size:13px;
+           font-variant-numeric:tabular-nums; white-space:nowrap; }
+  td.strong { font-weight:500; }
+  td.res { color:var(--res); }
+  td.spy { color:var(--spy); }
+  td.lean { color:var(--ink-mute); }
+  td.barcell { width:34%; min-width:150px; outline:none; }
+  .mini { position:relative; height:13px; background:var(--track); border-radius:3px; }
+  .mini-ci { position:absolute; top:0; height:13px; background:var(--neutral);
+             opacity:.3; border-radius:2px; }
+  .mini-fill { position:absolute; left:0; top:0; height:13px; background:var(--neutral);
+               border-radius:3px 4px 4px 3px; box-shadow:0 0 0 2px var(--surface); }
+  .chip {
+    display:inline-block; padding:2px 8px; border-radius:999px;
+    border:1px solid var(--rule); background:var(--paper);
+    font:500 11px/1.6 "IBM Plex Mono",monospace; color:var(--ink-soft);
+    font-variant-numeric:tabular-nums; white-space:nowrap;
+  }
+
+  /* ---- tier board ---- */
+  .tiers { border:1px solid var(--rule); border-radius:10px; overflow:hidden;
+           background:var(--surface); box-shadow:var(--shadow); }
+  .tier-row {
+    display:grid; grid-template-columns:104px 96px 1fr; align-items:center;
+    gap:14px; padding:11px 18px; border-bottom:1px solid var(--rule-soft);
+  }
+  .tier-row:last-child { border-bottom:none; }
+  .tier-row.empty { opacity:.4; }
+  .tier-row.unranked { background:var(--paper); }
+  .tier-name { font:500 11px/1 "IBM Plex Mono",monospace; letter-spacing:.12em;
+               text-transform:uppercase; }
+  .tier-span { font:400 11px/1 "IBM Plex Mono",monospace; color:var(--ink-mute);
+               font-variant-numeric:tabular-nums; }
+  .tier-chips { display:flex; flex-wrap:wrap; gap:7px; }
+  .tchip {
+    display:inline-flex; align-items:baseline; gap:6px; padding:3px 10px;
+    border-radius:999px; border:1px solid var(--rule); background:var(--paper);
+    font-size:12.5px; font-weight:500;
+  }
+  .tchip em { font:400 10.5px/1 "IBM Plex Mono",monospace; font-style:normal;
+              color:var(--ink-mute); font-variant-numeric:tabular-nums; }
+
+  /* ---- dumbbell ---- */
+  .legend { display:flex; gap:18px; align-items:center; flex-wrap:wrap;
+            margin:0 0 18px; font-size:12.5px; color:var(--ink-soft); }
+  .legend i { display:inline-block; width:11px; height:11px; border-radius:50%;
+              margin-right:6px; vertical-align:-1px; }
+  .k-res { background:var(--res); }
+  .k-spy { background:var(--spy); }
+  .k-ci { background:var(--neutral); opacity:.35; border-radius:2px !important; }
+  .db { display:flex; flex-direction:column; gap:3px; }
+  .db-row { display:grid; grid-template-columns:130px 1fr 40px; align-items:center;
+            gap:14px; padding:5px 0; }
+  .db-row.thin { opacity:.55; }
+  .db-name { font-size:13px; color:var(--ink-soft); white-space:nowrap;
+             overflow:hidden; text-overflow:ellipsis; }
+  .db-track { position:relative; height:22px; }
+  .db-track::before {
+    content:""; position:absolute; left:0; right:0; top:50%; height:1px;
+    background:var(--rule); }
+  .db-link { position:absolute; top:50%; height:2px; margin-top:-1px;
+             background:var(--neutral); opacity:.55; }
+  .db-ci { position:absolute; top:50%; height:6px; margin-top:-3px; border-radius:3px; }
+  .db-ci.res { background:var(--res-ci); }
+  .db-ci.spy { background:var(--spy-ci); }
+  .db-dot {
+    position:absolute; top:50%; width:11px; height:11px; margin:-5.5px 0 0 -5.5px;
+    border-radius:50%; box-shadow:0 0 0 2px var(--surface); outline:none;
+  }
+  .db-dot.res { background:var(--res); }
+  .db-dot.spy { background:var(--spy); }
+  .db-dot:hover, .db-dot:focus-visible { box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--rule); }
+  .db-gap { font:500 12px/1 "IBM Plex Mono",monospace; color:var(--ink-mute);
+            text-align:right; font-variant-numeric:tabular-nums; }
+  .axis { display:grid; grid-template-columns:130px 1fr 40px; gap:14px; margin-top:8px; }
+  .axis-scale { display:flex; justify-content:space-between;
+                font:400 10.5px/1 "IBM Plex Mono",monospace; color:var(--ink-mute); }
+
+  /* ---- player cards ---- */
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(440px,1fr)); gap:18px; }
+  @media (max-width:520px) { .cards { grid-template-columns:1fr; } }
+  .pcard { background:var(--surface); border:1px solid var(--rule); border-radius:10px;
+           padding:20px 22px 18px; box-shadow:var(--shadow); }
+  .pcard header { display:flex; justify-content:space-between; align-items:baseline; gap:16px; }
+  .pname { font-family:"Bodoni Moda",Georgia,serif; font-weight:600; font-size:24px;
+           margin:0; letter-spacing:-.01em; text-transform:none; color:var(--ink);
+           overflow:hidden; text-overflow:ellipsis; }
+  .phero { display:flex; align-items:baseline; gap:9px; white-space:nowrap; }
+  .phero-num { font-family:"Bodoni Moda",Georgia,serif; font-weight:600; font-size:30px;
+               font-variant-numeric:tabular-nums; }
+  .phero-cap { font:400 11px/1.45 "IBM Plex Mono",monospace; color:var(--ink-mute); text-align:right; }
+  .ci-text { font-size:10.5px; }
+  .pmeta { margin:8px 0 16px; font-size:12px; color:var(--ink-mute);
+           display:flex; align-items:center; gap:9px; flex-wrap:wrap;
+           padding-bottom:14px; border-bottom:1px solid var(--rule-soft); }
+
+  .rates { display:flex; flex-direction:column; gap:8px; }
+  .rate { display:grid; grid-template-columns:82px 1fr 40px 52px; align-items:center;
+          gap:10px; border-radius:4px; outline:none; }
+  .rate:hover, .rate:focus-visible { box-shadow:0 0 0 2px var(--rule); }
+  .rate.thin { opacity:.55; }
+  .rate-label { font-size:12.5px; color:var(--ink-soft); }
+  .rate-track { position:relative; height:14px; background:var(--track); border-radius:3px; }
+  .ci { position:absolute; top:0; height:14px; border-radius:2px; }
+  .fill { position:absolute; left:0; top:0; height:14px; border-radius:3px 4px 4px 3px;
+          min-width:3px; box-shadow:0 0 0 2px var(--surface); }
+  [data-side="res"] .fill { background:var(--res); }
+  [data-side="res"] .ci { background:var(--res-ci); }
+  [data-side="spy"] .fill { background:var(--spy); }
+  [data-side="spy"] .ci { background:var(--spy-ci); }
+  .rate-val { font:500 12.5px/1 "IBM Plex Mono",monospace; text-align:right;
+              font-variant-numeric:tabular-nums; }
+  .rate-n { font:400 10.5px/1 "IBM Plex Mono",monospace; color:var(--ink-mute);
+            text-align:right; font-variant-numeric:tabular-nums; }
+
+  .sizes { display:flex; gap:8px; align-items:flex-end; margin-top:18px;
+           padding-top:16px; border-top:1px solid var(--rule-soft); }
+  .size { flex:1; text-align:center; outline:none; border-radius:4px; }
+  .size.thin { opacity:.45; }
+  .size:hover, .size:focus-visible { box-shadow:0 0 0 2px var(--rule); }
+  .size-bar { height:46px; background:var(--track); border-radius:3px; display:flex;
+              align-items:flex-end; overflow:hidden; margin-bottom:5px; }
+  .size-bar > div { width:100%; background:var(--neutral); border-radius:3px 3px 0 0; min-height:2px; }
+  .size-n { font:500 11px/1.3 "IBM Plex Mono",monospace; }
+  .size-games { font:400 10px/1.3 "IBM Plex Mono",monospace; color:var(--ink-mute); }
+
+  th button {
+    font:500 10px/1 "IBM Plex Mono",monospace; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--ink-mute); background:none; border:0;
+    padding:0; cursor:pointer; white-space:nowrap; font-feature-settings:inherit;
+  }
+  th button:hover { color:var(--ink); }
+  th button:focus-visible { outline:2px solid var(--res); outline-offset:3px; border-radius:2px; }
+  th button::after { content:"\2009\00a0"; opacity:0; }
+  th[aria-sort] button { color:var(--ink); }
+  th[aria-sort="descending"] button::after { content:"\2009\25BC"; opacity:.7; }
+  th[aria-sort="ascending"] button::after { content:"\2009\25B2"; opacity:.7; }
+
+  .titles { display:grid; grid-template-columns:repeat(auto-fit,minmax(258px,1fr)); gap:14px; }
+  .tcard { background:var(--surface); border:1px solid var(--rule); border-radius:10px;
+           padding:18px 20px 14px; box-shadow:var(--shadow); display:flex;
+           flex-direction:column; gap:6px; }
+  .tcard h4 { font-family:"Bodoni Moda",Georgia,serif; font-weight:600; font-size:21px;
+              margin:0; letter-spacing:-.01em; text-wrap:balance; }
+  .tholder { margin:0; font:500 11px/1 "IBM Plex Mono",monospace; letter-spacing:.12em;
+             text-transform:uppercase; color:var(--ink-mute); }
+  .tev { margin:4px 0 0; font-size:13px; color:var(--ink-soft); line-height:1.5; }
+  .tmarks { margin:6px 0 0; display:flex; gap:6px; flex-wrap:wrap; min-height:0; }
+  .seal { font:500 9.5px/1.7 "IBM Plex Mono",monospace; letter-spacing:.1em;
+          text-transform:uppercase; padding:2px 8px; border-radius:999px;
+          border:1px solid var(--ink-soft); color:var(--ink-soft); cursor:help; }
+  .seal.soft { border-style:dashed; border-color:var(--rule); color:var(--ink-mute); }
+  .pepithet { margin:2px 0 0; font:500 10.5px/1 "IBM Plex Mono",monospace;
+              letter-spacing:.1em; text-transform:uppercase; color:var(--ink-mute); }
+
+  .panel { background:var(--surface); border:1px solid var(--rule); border-radius:10px;
+           padding:20px 22px; box-shadow:var(--shadow); }
+  .chartbox { background:var(--surface); border:1px solid var(--rule); border-radius:10px;
+              padding:14px 16px 6px; box-shadow:var(--shadow); overflow-x:auto; }
+  .funnel { display:block; width:100%; min-width:600px; height:auto; }
+  .funnel circle { outline:none; }
+  .funnel circle:hover, .funnel circle:focus-visible { stroke-width:3; }
+  .rate.wide { grid-template-columns:100px 1fr 44px 68px; }
+  .db-name em { font-style:normal; color:var(--ink-mute);
+                font:400 10.5px/1 "IBM Plex Mono",monospace; margin-left:6px; }
+
+  .caveats { border-left:2px solid var(--rule); padding:2px 0 2px 18px;
+             color:var(--ink-soft); font-size:14px; max-width:70ch; }
+  .caveats p { margin:0 0 11px; }
+  .caveats strong { color:var(--ink); }
+
+  #tip {
+    position:fixed; z-index:20; pointer-events:none; opacity:0;
+    transition:opacity .12s ease; max-width:290px;
+    background:var(--ink); color:var(--paper); padding:7px 10px; border-radius:6px;
+    font:400 12px/1.45 "IBM Plex Mono",monospace;
+  }
+  @media (prefers-reduced-motion:reduce) { * { transition:none !important; } }
+</style>
+
+<div class="wrap">
+  <div class="masthead">
+    <div>
+      <p class="kicker">12 players · 352 games</p>
+      <h1>ProAvalon 1B</h1>
+    </div>
+    <p class="stamp">snapshot<br>14 Sep 2026, 01:13</p>
+  </div>
+
+  <section>
+    <h3>The table's tell</h3>
+    <div class="headline">
+      <div class="hl">
+        <span class="hl-num res">40%</span>
+        <span class="hl-cap">win rate on <strong>Resistance</strong><br>214 loyal seats played</span>
+      </div>
+      <div class="hl">
+        <span class="hl-num spy">59%</span>
+        <span class="hl-cap">win rate on <strong>Spy</strong><br>138 evil seats played</span>
+      </div>
+      <div class="hl">
+        <span class="hl-num">+19</span>
+        <span class="hl-cap">point swing toward evil across the whole group</span>
+      </div>
+      <div class="hl">
+        <span class="hl-num">9/11</span>
+        <span class="hl-cap">of the 11 players who have played both sides win more often as a spy</span>
+      </div>
+    </div>
+    <p class="lede" style="margin-top:18px">Seats are counted per player, so a game you
+      played together is counted once for each of you — these are the group's seats, not
+      a tally of distinct games.</p>
+  </section>
+
+  <section>
+    <h3>Standing</h3>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th class="l"><button type="button" data-col="1" data-type="text">player</button></th>
+            <th class="l"><button type="button" data-col="2" data-type="text">title</button></th>
+            <th class="l"><button type="button" data-col="3">rank</button></th>
+            <th><button type="button" data-col="4">games</button></th>
+            <th class="l"><button type="button" data-col="5">win rate · 95% CI</button></th>
+            <th><button type="button" data-col="6">win%</button></th>
+            <th><button type="button" data-col="7">res</button></th>
+            <th><button type="button" data-col="8">spy</button></th>
+          </tr>
+        </thead>
+        <tbody>
+      <tr class="">
+        <td class="rank">1</td>
+        <td class="who" data-v="axehaybond">axehaybond</td>
+        <td class="title" data-v="the spymaster">The Spymaster</td>
+        <td class="tier" data-v="1587.0" data-tip="axehaybond — 1587" tabindex="0"><span class="chip gold">Gold</span></td>
+        <td class="num" data-v="43">43</td>
+        <td class="barcell" data-v="0.5581" data-tip="axehaybond: 24W 19L — 56% (95% CI 41%–70%)" tabindex="0">
+          <div class="mini">
+            <div class="mini-ci" style="left:41.1%;width:28.5%"></div>
+            <div class="mini-fill" style="width:55.8%"></div>
+            <div class="coinflip"></div>
+          </div>
+        </td>
+        <td class="num strong" data-v="0.5581">56%</td>
+        <td class="num res" data-v="0.4828" data-tip="Resistance: 14W 15L" tabindex="0">48%</td>
+        <td class="num spy" data-v="0.7143" data-tip="Spy: 10W 4L" tabindex="0">71%</td>
+      </tr>
+      <tr class="">
+        <td class="rank">2</td>
+        <td class="who" data-v="saiteja10">Saiteja10</td>
+        <td class="title" data-v="the proven">The Proven</td>
+        <td class="tier" data-v="1624.5" data-tip="Saiteja10 — Gold, exact rating not public" tabindex="0"><span class="chip gold">Gold</span></td>
+        <td class="num" data-v="31">31</td>
+        <td class="barcell" data-v="0.6774" data-tip="Saiteja10: 21W 10L — 68% (95% CI 50%–81%)" tabindex="0">
+          <div class="mini">
+            <div class="mini-ci" style="left:50.1%;width:31.3%"></div>
+            <div class="mini-fill" style="width:67.7%"></div>
+            <div class="coinflip"></div>
+          </div>
+        </td>
+        <td class="num strong" data-v="0.6774">68%</td>
+        <td class="num res" data-v="0.6923" data-tip="Resistance: 9W 4L" tabindex="0">69%</td>
+        <td class="num spy" data-v="0.6667" data-tip="Spy: 12W 6L" tabindex="0">67%</td>
+      </tr>
+      <tr class="">
+        <td class="rank">3</td>
+        <td class="who" data-v="sandyk">SandyK</td>
+        <td class="title" data-v="the suspected">The Suspected</td>
+        <td class="tier" data-v="1474.5" data-tip="SandyK — Silver, exact rating not public" tabindex="0"><span class="chip silver">Silver</span></td>
+        <td class="num" data-v="22">22</td>
+        <td class="barcell" data-v="0.4545" data-tip="SandyK: 10W 12L — 45% (95% CI 27%–65%)" tabindex="0">
+          <div class="mini">
+            <div class="mini-ci" style="left:26.9%;width:38.4%"></div>
+            <div class="mini-fill" style="width:45.5%"></div>
+            <div class="coinflip"></div>
+          </div>
+        </td>
+        <td class="num strong" data-v="0.4545">45%</td>
+        <td class="num res" data-v="0.3125" data-tip="Resistance: 5W 11L" tabindex="0">31%</td>
+        <td class="num spy" data-v="0.8333" data-tip="Spy: 5W 1L" tabindex="0">83%</td>
+      </tr>
+      <tr class="">
+        <td class="rank">4</td>
+        <td class="who" data-v="srinivas">Srinivas</td>
+        <td class="title" data-v="the coin flip">The Coin Flip</td>
+        <td class="tier" data-v="1474.5" data-tip="Srinivas — Silver, exact rating not public" tabindex="0"><span class="chip silver">Silver</span></td>
+        <td class="num" data-v="35">35</td>
+        <td class="barcell" data-v="0.4857" data-tip="Srinivas: 17W 18L — 49% (95% CI 33%–64%)" tabindex="0">
+          <div class="mini">
+            <div class="mini-ci" style="left:33.0%;width:31.4%"></div>
+            <div class="mini-fill" style="width:48.6%"></div>
+            <div class="coinflip"></div>
+          </div>
+        </td>
+        <td class="num strong" data-v="0.4857">49%</td>
+        <td class="num res" data-v="0.4348" data-tip="Resistance: 10W 13L" tabindex="0">43%</td>
+        <td class="num spy" data-v="0.5833" data-tip="Spy: 7W 5L" tabindex="0">58%</td>
+      </tr>
+      <tr class="">
+        <td class="rank">5</td>
+        <td class="who" data-v="lihitveer">lihitveer</td>
+        <td class="title" data-v="born traitor">Born Traitor</td>
+        <td class="tier" data-v="1474.5" data-tip="lihitveer — Silver, exact rating not public" tabindex="0"><span class="chip silver">Silver</span></td>
+        <td class="num" data-v="31">31</td>
+        <td class="barcell" data-v="0.3871" data-tip="lihitveer: 12W 19L — 39% (95% CI 24%–56%)" tabindex="0">
+          <div class="mini">
+            <div class="mini-ci" style="left:23.7%;width:32.4%"></div>
+            <div class="mini-fill" style="width:38.7%"></div>
+            <div class="coinflip"></div>
+          </div>
+        </td>
+        <td class="num strong" data-v="0.3871">39%</td>
+        <td class="num res" data-v="0.3125" data-tip="Resistance: 5W 11L" tabindex="0">31%</td>
+        <td class="num spy" data-v="0.4667" data-tip="Spy: 7W 8L" tabindex="0">47%</td>
+      </tr>
+      <tr class="">
+        <td class="rank">6</td>
+        <td class="who" data-v="logstark007">logstark007</td>
+        <td class="title" data-v="the obvious villain">The Obvious Villain</td>
+        <td class="tier" data-v="1474.5" data-tip="logstark007 — Silver, exact rating not public" tabindex="0"><span class="chip silver">Silver</span></td>
+        <td class="num" data-v="27">27</td>
+        <td class="barcell" data-v="0.3333" data-tip="logstark007: 9W 18L — 33% (95% CI 19%–52%)" tabindex="0">
+          <div class="mini">
+            <div class="mini-ci" style="left:18.6%;width:33.5%"></div>
+            <div class="mini-fill" style="width:33.3%"></div>
+            <div class="coinflip"></div>
+          </div>
+        </td>
+        <td class="num strong" data-v="0.3333">33%</td>
+        <td class="num res" data-v="0.3529" data-tip="Resistance: 6W 11L" tabindex="0">35%</td>
+        <td class="num spy" data-v="0.3000" data-tip="Spy: 3W 7L" tabindex="0">30%</td>
+      </tr>
+      <tr class="">
+        <td class="rank">7</td>
+        <td class="who" data-v="loyalvillager123">loyalvillager123</td>
+        <td class="title" data-v="merlin's curse">Merlin's Curse</td>
+        <td class="tier" data-v="1474.5" data-tip="loyalvillager123 — Silver, exact rating not public" tabindex="0"><span class="chip silver">Silver</span></td>
+        <td class="num" data-v="50">50</td>
+        <td class="barcell" data-v="0.4600" data-tip="loyalvillager123: 23W 27L — 46% (95% CI 33%–60%)" tabindex="0">
+          <div class="mini">
+            <div class="mini-ci" style="left:33.0%;width:26.6%"></div>
+            <div class="mini-fill" style="width:46.0%"></div>
+            <div class="coinflip"></div>
+          </div>
+        </td>
+        <td class="num strong" data-v="0.4600">46%</td>
+        <td class="num res" data-v="0.3871" data-tip="Resistance: 12W 19L" tabindex="0">39%</td>
+        <td class="num spy" data-v="0.5789" data-tip="Spy: 11W 8L" tabindex="0">58%</td>
+      </tr>
+      <tr class="">
+        <td class="rank">8</td>
+        <td class="who" data-v="nabbina">nabbina</td>
+        <td class="title" data-v="the seer">The Seer</td>
+        <td class="tier" data-v="1474.5" data-tip="nabbina — Silver, exact rating not public" tabindex="0"><span class="chip silver">Silver</span></td>
+        <td class="num" data-v="23">23</td>
+        <td class="barcell" data-v="0.5217" data-tip="nabbina: 12W 11L — 52% (95% CI 33%–71%)" tabindex="0">
+          <div class="mini">
+            <div class="mini-ci" style="left:33.0%;width:37.8%"></div>
+            <div class="mini-fill" style="width:52.2%"></div>
+            <div class="coinflip"></div>
+          </div>
+        </td>
+        <td class="num strong" data-v="0.5217">52%</td>
+        <td class="num res" data-v="0.5000" data-tip="Resistance: 7W 7L" tabindex="0">50%</td>
+        <td class="num spy" data-v="0.5556" data-tip="Spy: 5W 4L" tabindex="0">56%</td>
+      </tr>
+      <tr class="">
+        <td class="rank">9</td>
+        <td class="who" data-v="saicha">saicha</td>
+        <td class="title" data-v="the loiterer">The Loiterer</td>
+        <td class="tier" data-v="1474.5" data-tip="saicha — Silver, exact rating not public" tabindex="0"><span class="chip silver">Silver</span></td>
+        <td class="num" data-v="61">61</td>
+        <td class="barcell" data-v="0.4098" data-tip="saicha: 25W 36L — 41% (95% CI 30%–54%)" tabindex="0">
+          <div class="mini">
+            <div class="mini-ci" style="left:29.5%;width:24.0%"></div>
+            <div class="mini-fill" style="width:41.0%"></div>
+            <div class="coinflip"></div>
+          </div>
+        </td>
+        <td class="num strong" data-v="0.4098">41%</td>
+        <td class="num res" data-v="0.2857" data-tip="Resistance: 10W 25L" tabindex="0">29%</td>
+        <td class="num spy" data-v="0.5769" data-tip="Spy: 15W 11L" tabindex="0">58%</td>
+      </tr>
+      <tr class="">
+        <td class="rank">10</td>
+        <td class="who" data-v="vamsi541605">Vamsi541605</td>
+        <td class="title" data-v="lost in the crowd">Lost in the Crowd</td>
+        <td class="tier" data-v="-1" data-tip="Vamsi541605 — Unranked, exact rating not public" tabindex="0"><span class="chip unranked">Unranked</span></td>
+        <td class="num" data-v="16">16</td>
+        <td class="barcell" data-v="0.4375" data-tip="Vamsi541605: 7W 9L — 44% (95% CI 23%–67%)" tabindex="0">
+          <div class="mini">
+            <div class="mini-ci" style="left:23.1%;width:43.7%"></div>
+            <div class="mini-fill" style="width:43.8%"></div>
+            <div class="coinflip"></div>
+          </div>
+        </td>
+        <td class="num strong" data-v="0.4375">44%</td>
+        <td class="num res" data-v="0.3636" data-tip="Resistance: 4W 7L" tabindex="0">36%</td>
+        <td class="num spy" data-v="0.6000" data-tip="Spy: 3W 2L" tabindex="0">60%</td>
+      </tr>
+      <tr class="thin">
+        <td class="rank">11</td>
+        <td class="who" data-v="raksbro">Raksbro</td>
+        <td class="title" data-v="the understudy">The Understudy</td>
+        <td class="tier" data-v="-1" data-tip="Raksbro — Unranked, exact rating not public" tabindex="0"><span class="chip unranked">Unranked</span></td>
+        <td class="num" data-v="9">9</td>
+        <td class="barcell" data-v="0.4444" data-tip="Raksbro: 4W 5L — 44% (95% CI 19%–73%)" tabindex="0">
+          <div class="mini">
+            <div class="mini-ci" style="left:18.9%;width:54.5%"></div>
+            <div class="mini-fill" style="width:44.4%"></div>
+            <div class="coinflip"></div>
+          </div>
+        </td>
+        <td class="num strong" data-v="0.4444">44%</td>
+        <td class="num res" data-v="0.2000" data-tip="Resistance: 1W 4L" tabindex="0">20%</td>
+        <td class="num spy" data-v="0.7500" data-tip="Spy: 3W 1L" tabindex="0">75%</td>
+      </tr>
+      <tr class="thin">
+        <td class="rank">12</td>
+        <td class="who" data-v="darthvader619">Darthvader619</td>
+        <td class="title" data-v="the newcomer">The Newcomer</td>
+        <td class="tier" data-v="-1" data-tip="Darthvader619 — Unranked, exact rating not public" tabindex="0"><span class="chip unranked">Unranked</span></td>
+        <td class="num" data-v="4">4</td>
+        <td class="barcell" data-v="0.5000" data-tip="Darthvader619: 2W 2L — 50% (95% CI 15%–85%)" tabindex="0">
+          <div class="mini">
+            <div class="mini-ci" style="left:15.0%;width:70.0%"></div>
+            <div class="mini-fill" style="width:50.0%"></div>
+            <div class="coinflip"></div>
+          </div>
+        </td>
+        <td class="num strong" data-v="0.5000">50%</td>
+        <td class="num res" data-v="0.5000" data-tip="Resistance: 2W 2L" tabindex="0">50%</td>
+        <td class="num spy" data-v="-1.0000" data-tip="Spy: 0W 0L" tabindex="0">—</td>
+      </tr></tbody>
+      </table>
+    </div>
+    <p class="lede" style="margin-top:14px">Click any column to sort. Ordered by rank, not by
+      win rate — a win rate over 30-odd games moves on a good night. Rows under 15 games are
+      faded. Hover a rank to see the exact rating where the site discloses one.</p>
+  </section>
+
+  <section>
+    <h3>Titles</h3>
+    <p class="lede">One earned name each, taken from whichever measure that player sits
+      furthest out on. A title is only handed over if its wording is literally true of the
+      holder — and where someone is the outright extreme in the group, it says so.</p>
+    <div class="titles">
+        <article class="tcard">
+          <h4>The Spymaster</h4>
+          <p class="tholder">axehaybond</p>
+          <p class="tev">wins 71% of 14 seats on the evil side</p>
+          <p class="tmarks"><span class="seal" data-tip="No one in the group sits further out on this measure.">undisputed</span></p>
+        </article>
+        <article class="tcard">
+          <h4>The Proven</h4>
+          <p class="tholder">Saiteja10</p>
+          <p class="tev">21W 10L over 31 games — far enough from 50% that luck does not explain it</p>
+          <p class="tmarks"><span class="seal" data-tip="No one in the group sits further out on this measure.">undisputed</span></p>
+        </article>
+        <article class="tcard">
+          <h4>The Suspected</h4>
+          <p class="tholder">SandyK</p>
+          <p class="tev">+52 points better as a spy — on only 6 evil seats</p>
+          <p class="tmarks"></p>
+        </article>
+        <article class="tcard">
+          <h4>The Coin Flip</h4>
+          <p class="tholder">Srinivas</p>
+          <p class="tev">49% across 35 games — a fair coin would look like this</p>
+          <p class="tmarks"><span class="seal" data-tip="No one in the group sits further out on this measure.">undisputed</span></p>
+        </article>
+        <article class="tcard">
+          <h4>Born Traitor</h4>
+          <p class="tholder">lihitveer</p>
+          <p class="tev">+15 points better as a spy than as a loyalist</p>
+          <p class="tmarks"></p>
+        </article>
+        <article class="tcard">
+          <h4>The Obvious Villain</h4>
+          <p class="tholder">logstark007</p>
+          <p class="tev">only 30% on the evil side across 10 seats</p>
+          <p class="tmarks"><span class="seal" data-tip="No one in the group sits further out on this measure.">undisputed</span></p>
+        </article>
+        <article class="tcard">
+          <h4>Merlin's Curse</h4>
+          <p class="tholder">loyalvillager123</p>
+          <p class="tev">1W 5L as Merlin — found nearly every time</p>
+          <p class="tmarks"><span class="seal" data-tip="No one in the group sits further out on this measure.">undisputed</span><span class="seal soft" data-tip="Earned on a small number of seats — treat it as provisional.">provisional</span></p>
+        </article>
+        <article class="tcard">
+          <h4>The Seer</h4>
+          <p class="tholder">nabbina</p>
+          <p class="tev">4W 3L as Merlin, in the hardest seat at the table</p>
+          <p class="tmarks"><span class="seal soft" data-tip="Earned on a small number of seats — treat it as provisional.">provisional</span></p>
+        </article>
+        <article class="tcard">
+          <h4>The Loiterer</h4>
+          <p class="tholder">saicha</p>
+          <p class="tev">32 minutes per game, about 3.3× the group's pace</p>
+          <p class="tmarks"><span class="seal" data-tip="No one in the group sits further out on this measure.">undisputed</span></p>
+        </article>
+        <article class="tcard">
+          <h4>Lost in the Crowd</h4>
+          <p class="tholder">Vamsi541605</p>
+          <p class="tev">2W 6L in the plain Resistance seat</p>
+          <p class="tmarks"><span class="seal" data-tip="No one in the group sits further out on this measure.">undisputed</span><span class="seal soft" data-tip="Earned on a small number of seats — treat it as provisional.">provisional</span></p>
+        </article>
+        <article class="tcard">
+          <h4>The Understudy</h4>
+          <p class="tholder">Raksbro</p>
+          <p class="tev">9 games, still writing the record</p>
+          <p class="tmarks"><span class="seal soft" data-tip="Earned on a small number of seats — treat it as provisional.">provisional</span></p>
+        </article>
+        <article class="tcard">
+          <h4>The Newcomer</h4>
+          <p class="tholder">Darthvader619</p>
+          <p class="tev">4 games in — every number here is still a rumour</p>
+          <p class="tmarks"><span class="seal" data-tip="No one in the group sits further out on this measure.">undisputed</span></p>
+        </article></div>
+  </section>
+
+  <section>
+    <h3>Brackets</h3>
+    <p class="lede">ProAvalon shows an exact rating only on your own profile; everyone else
+      resolves to a bracket, so a name here means "somewhere in this range".</p>
+    <div class="tiers"><div class="tier-row empty"><div class="tier-name">champion</div><div class="tier-span">1900+</div><div class="tier-chips"></div></div><div class="tier-row empty"><div class="tier-name">diamond</div><div class="tier-span">1800–1899</div><div class="tier-chips"></div></div><div class="tier-row empty"><div class="tier-name">platinum</div><div class="tier-span">1700–1799</div><div class="tier-chips"></div></div><div class="tier-row"><div class="tier-name">gold</div><div class="tier-span">1550–1699</div><div class="tier-chips"><span class="tchip">axehaybond<em>1587</em></span><span class="tchip">Saiteja10</span></div></div><div class="tier-row"><div class="tier-name">silver</div><div class="tier-span">1400–1549</div><div class="tier-chips"><span class="tchip">SandyK</span><span class="tchip">Srinivas</span><span class="tchip">lihitveer</span><span class="tchip">logstark007</span><span class="tchip">loyalvillager123</span><span class="tchip">nabbina</span><span class="tchip">saicha</span></div></div><div class="tier-row empty"><div class="tier-name">bronze</div><div class="tier-span">1300–1399</div><div class="tier-chips"></div></div><div class="tier-row empty"><div class="tier-name">iron</div><div class="tier-span">0–1299</div><div class="tier-chips"></div></div><div class="tier-row unranked"><div class="tier-name">unranked</div><div class="tier-span">no bracket yet</div><div class="tier-chips"><span class="tchip">Vamsi541605<em>16g</em></span><span class="tchip">Raksbro<em>9g</em></span><span class="tchip">Darthvader619<em>4g</em></span></div></div></div>
+  </section>
+
+  <section>
+    <h3>Is anyone actually good?</h3>
+    <p class="lede">Every player's win rate against the number of games behind it. The
+      shaded funnel is the range a pure coin flip produces 95% of the time — it is wide on
+      the left because a handful of games proves nothing, and narrows as games accumulate.
+      A hollow dot sits inside the funnel: that record is indistinguishable from luck.
+      <strong>1 of 12 clears it — Saiteja10.</strong></p>
+    <div class="chartbox">
+    <svg viewBox="0 0 800 430" class="funnel" role="img"
+         aria-label="Win rate against games played, with the 95% band expected from a coin flip.">
+      <line x1="52" y1="386.0" x2="704" y2="386.0" stroke="var(--rule)" stroke-width="1"/><text x="42" y="390.0" text-anchor="end" font-size="11" fill="var(--ink-mute)" font-family="IBM Plex Mono, monospace">0%</text><line x1="52" y1="294.0" x2="704" y2="294.0" stroke="var(--rule)" stroke-width="1"/><text x="42" y="298.0" text-anchor="end" font-size="11" fill="var(--ink-mute)" font-family="IBM Plex Mono, monospace">25%</text><line x1="52" y1="202.0" x2="704" y2="202.0" stroke="var(--rule)" stroke-width="1"/><text x="42" y="206.0" text-anchor="end" font-size="11" fill="var(--ink-mute)" font-family="IBM Plex Mono, monospace">50%</text><line x1="52" y1="110.0" x2="704" y2="110.0" stroke="var(--rule)" stroke-width="1"/><text x="42" y="114.0" text-anchor="end" font-size="11" fill="var(--ink-mute)" font-family="IBM Plex Mono, monospace">75%</text><line x1="52" y1="18.0" x2="704" y2="18.0" stroke="var(--rule)" stroke-width="1"/><text x="42" y="22.0" text-anchor="end" font-size="11" fill="var(--ink-mute)" font-family="IBM Plex Mono, monospace">100%</text><text x="52.0" y="410" text-anchor="middle" font-size="11" fill="var(--ink-mute)" font-family="IBM Plex Mono, monospace">0</text><text x="238.3" y="410" text-anchor="middle" font-size="11" fill="var(--ink-mute)" font-family="IBM Plex Mono, monospace">20</text><text x="424.6" y="410" text-anchor="middle" font-size="11" fill="var(--ink-mute)" font-family="IBM Plex Mono, monospace">40</text><text x="610.9" y="410" text-anchor="middle" font-size="11" fill="var(--ink-mute)" font-family="IBM Plex Mono, monospace">60</text>
+      <path d="M70.6,18.0 L76.0,18.0 L81.3,18.0 L86.6,18.0 L91.9,27.8 L97.2,38.4 L102.6,47.2 L107.9,54.8 L113.2,61.3 L118.5,67.1 L123.9,72.2 L129.2,76.7 L134.5,80.8 L139.8,84.6 L145.1,88.0 L150.5,91.1 L155.8,94.0 L161.1,96.6 L166.4,99.1 L171.8,101.4 L177.1,103.6 L182.4,105.6 L187.7,107.5 L193.0,109.3 L198.4,111.0 L203.7,112.6 L209.0,114.2 L214.3,115.6 L219.7,117.0 L225.0,118.3 L230.3,119.6 L235.6,120.8 L240.9,121.9 L246.3,123.0 L251.6,124.1 L256.9,125.1 L262.2,126.1 L267.6,127.0 L272.9,127.9 L278.2,128.8 L283.5,129.7 L288.8,130.5 L294.2,131.3 L299.5,132.0 L304.8,132.8 L310.1,133.5 L315.5,134.2 L320.8,134.9 L326.1,135.5 L331.4,136.2 L336.8,136.8 L342.1,137.4 L347.4,138.0 L352.7,138.5 L358.0,139.1 L363.4,139.6 L368.7,140.2 L374.0,140.7 L379.3,141.2 L384.7,141.7 L390.0,142.1 L395.3,142.6 L400.6,143.1 L405.9,143.5 L411.3,143.9 L416.6,144.4 L421.9,144.8 L427.2,145.2 L432.6,145.6 L437.9,146.0 L443.2,146.4 L448.5,146.7 L453.8,147.1 L459.2,147.5 L464.5,147.8 L469.8,148.2 L475.1,148.5 L480.5,148.8 L485.8,149.2 L491.1,149.5 L496.4,149.8 L501.7,150.1 L507.1,150.4 L512.4,150.7 L517.7,151.0 L523.0,151.3 L528.4,151.6 L533.7,151.9 L539.0,152.1 L544.3,152.4 L549.6,152.7 L555.0,152.9 L560.3,153.2 L565.6,153.4 L570.9,153.7 L576.3,153.9 L581.6,154.2 L586.9,154.4 L592.2,154.6 L597.6,154.9 L602.9,155.1 L608.2,155.3 L613.5,155.6 L618.8,155.8 L624.2,156.0 L629.5,156.2 L634.8,156.4 L640.1,156.6 L645.5,156.8 L650.8,157.0 L656.1,157.2 L661.4,157.4 L666.7,157.6 L672.1,157.8 L677.4,158.0 L682.7,158.2 L688.0,158.4 L693.4,158.5 L698.7,158.7 L704.0,158.9 L704.0,245.1 L698.7,245.3 L693.4,245.5 L688.0,245.6 L682.7,245.8 L677.4,246.0 L672.1,246.2 L666.7,246.4 L661.4,246.6 L656.1,246.8 L650.8,247.0 L645.5,247.2 L640.1,247.4 L634.8,247.6 L629.5,247.8 L624.2,248.0 L618.8,248.2 L613.5,248.4 L608.2,248.7 L602.9,248.9 L597.6,249.1 L592.2,249.4 L586.9,249.6 L581.6,249.8 L576.3,250.1 L570.9,250.3 L565.6,250.6 L560.3,250.8 L555.0,251.1 L549.6,251.3 L544.3,251.6 L539.0,251.9 L533.7,252.1 L528.4,252.4 L523.0,252.7 L517.7,253.0 L512.4,253.3 L507.1,253.6 L501.7,253.9 L496.4,254.2 L491.1,254.5 L485.8,254.8 L480.5,255.2 L475.1,255.5 L469.8,255.8 L464.5,256.2 L459.2,256.5 L453.8,256.9 L448.5,257.3 L443.2,257.6 L437.9,258.0 L432.6,258.4 L427.2,258.8 L421.9,259.2 L416.6,259.6 L411.3,260.1 L405.9,260.5 L400.6,260.9 L395.3,261.4 L390.0,261.9 L384.7,262.3 L379.3,262.8 L374.0,263.3 L368.7,263.8 L363.4,264.4 L358.0,264.9 L352.7,265.5 L347.4,266.0 L342.1,266.6 L336.8,267.2 L331.4,267.8 L326.1,268.5 L320.8,269.1 L315.5,269.8 L310.1,270.5 L304.8,271.2 L299.5,272.0 L294.2,272.7 L288.8,273.5 L283.5,274.3 L278.2,275.2 L272.9,276.1 L267.6,277.0 L262.2,277.9 L256.9,278.9 L251.6,279.9 L246.3,281.0 L240.9,282.1 L235.6,283.2 L230.3,284.4 L225.0,285.7 L219.7,287.0 L214.3,288.4 L209.0,289.8 L203.7,291.4 L198.4,293.0 L193.0,294.7 L187.7,296.5 L182.4,298.4 L177.1,300.4 L171.8,302.6 L166.4,304.9 L161.1,307.4 L155.8,310.0 L150.5,312.9 L145.1,316.0 L139.8,319.4 L134.5,323.2 L129.2,327.3 L123.9,331.8 L118.5,336.9 L113.2,342.7 L107.9,349.2 L102.6,356.8 L97.2,365.6 L91.9,376.2 L86.6,386.0 L81.3,386.0 L76.0,386.0 L70.6,386.0 Z" fill="var(--neutral)" fill-opacity=".14"/>
+      <line x1="52" y1="202.0" x2="704" y2="202.0"
+            stroke="var(--ink-mute)" stroke-width="1" stroke-dasharray="3 3"/>
+      <circle cx="620.2" cy="235.2" r="5.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.6" tabindex="0" data-tip="saicha: 25W 36L in 61 games — 41% — inside the coin-flip band"/><circle cx="517.7" cy="216.7" r="5.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.6" tabindex="0" data-tip="loyalvillager123: 23W 27L in 50 games — 46% — inside the coin-flip band"/><circle cx="452.5" cy="180.6" r="5.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.6" tabindex="0" data-tip="axehaybond: 24W 19L in 43 games — 56% — inside the coin-flip band"/><circle cx="378.0" cy="207.3" r="5.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.6" tabindex="0" data-tip="Srinivas: 17W 18L in 35 games — 49% — inside the coin-flip band"/><circle cx="340.7" cy="136.7" r="5.5" fill="var(--ink)" stroke="var(--ink)" stroke-width="1.6" tabindex="0" data-tip="Saiteja10: 21W 10L in 31 games — 68% — clears the coin-flip band"/><circle cx="340.7" cy="243.5" r="5.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.6" tabindex="0" data-tip="lihitveer: 12W 19L in 31 games — 39% — inside the coin-flip band"/><circle cx="303.5" cy="263.3" r="5.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.6" tabindex="0" data-tip="logstark007: 9W 18L in 27 games — 33% — inside the coin-flip band"/><circle cx="266.2" cy="194.0" r="5.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.6" tabindex="0" data-tip="nabbina: 12W 11L in 23 games — 52% — inside the coin-flip band"/><circle cx="256.9" cy="218.7" r="5.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.6" tabindex="0" data-tip="SandyK: 10W 12L in 22 games — 45% — inside the coin-flip band"/><circle cx="201.0" cy="225.0" r="5.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.6" tabindex="0" data-tip="Vamsi541605: 7W 9L in 16 games — 44% — inside the coin-flip band"/><circle cx="135.8" cy="222.4" r="5.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.6" tabindex="0" data-tip="Raksbro: 4W 5L in 9 games — 44% — inside the coin-flip band"/><circle cx="89.3" cy="202.0" r="5.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.6" tabindex="0" data-tip="Darthvader619: 2W 2L in 4 games — 50% — inside the coin-flip band"/><text x="630.2" y="239.2" font-size="11.5" font-weight="400" fill="var(--ink-soft)" font-family="IBM Plex Sans, sans-serif">saicha</text><text x="527.7" y="220.7" font-size="11.5" font-weight="400" fill="var(--ink-soft)" font-family="IBM Plex Sans, sans-serif">loyalvillager123</text><text x="462.5" y="184.6" font-size="11.5" font-weight="400" fill="var(--ink-soft)" font-family="IBM Plex Sans, sans-serif">axehaybond</text><text x="388.0" y="211.3" font-size="11.5" font-weight="400" fill="var(--ink-soft)" font-family="IBM Plex Sans, sans-serif">Srinivas</text><text x="350.7" y="140.7" font-size="11.5" font-weight="600" fill="var(--ink-soft)" font-family="IBM Plex Sans, sans-serif">Saiteja10</text><text x="350.7" y="247.5" font-size="11.5" font-weight="400" fill="var(--ink-soft)" font-family="IBM Plex Sans, sans-serif">lihitveer</text><text x="313.5" y="267.3" font-size="11.5" font-weight="400" fill="var(--ink-soft)" font-family="IBM Plex Sans, sans-serif">logstark007</text><text x="276.2" y="198.0" font-size="11.5" font-weight="400" fill="var(--ink-soft)" font-family="IBM Plex Sans, sans-serif">nabbina</text><text x="266.9" y="222.7" font-size="11.5" font-weight="400" fill="var(--ink-soft)" font-family="IBM Plex Sans, sans-serif">SandyK</text><text x="211.0" y="242.0" font-size="11.5" font-weight="400" fill="var(--ink-soft)" font-family="IBM Plex Sans, sans-serif">Vamsi541605</text><text x="145.8" y="226.4" font-size="11.5" font-weight="400" fill="var(--ink-soft)" font-family="IBM Plex Sans, sans-serif">Raksbro</text><text x="99.3" y="206.0" font-size="11.5" font-weight="400" fill="var(--ink-soft)" font-family="IBM Plex Sans, sans-serif">Darthvader619</text>
+      <text x="378" y="424" text-anchor="middle" font-size="11"
+            fill="var(--ink-mute)" font-family="IBM Plex Mono, monospace">games played</text>
+    </svg></div>
+  </section>
+
+  <section>
+    <h3>Which seat wins</h3>
+    <p class="lede">Every seat the group has been dealt, pooled across all 12
+      players. Individually these roles are noise; pooled, the split is unmistakable —
+      the three loyal roles land at 38–41%, the three evil roles at 57–61%.</p>
+    <div class="legend">
+      <span><i class="k-res"></i>Resistance side</span>
+      <span><i class="k-spy"></i>Spy side</span>
+      <span><i class="k-ci"></i>95% confidence interval</span>
+      <span>│ 50% coin flip</span>
+    </div>
+    <div class="panel"><div class="rates">
+        <div class="rate wide" data-side="spy" tabindex="0"
+             data-tip="Spy: 20W 13L over 33 seats — 61% (95% CI 44%–75%)">
+          <div class="rate-label">Spy</div>
+          <div class="rate-track">
+            <div class="ci" style="left:43.7%;width:31.6%"></div>
+            <div class="fill" style="width:60.6%"></div>
+            <div class="coinflip"></div>
+          </div>
+          <div class="rate-val">61%</div>
+          <div class="rate-n">33 seats</div>
+        </div>
+        <div class="rate wide" data-side="spy" tabindex="0"
+             data-tip="Assassin: 32W 21L over 53 seats — 60% (95% CI 47%–72%)">
+          <div class="rate-label">Assassin</div>
+          <div class="rate-track">
+            <div class="ci" style="left:46.9%;width:25.5%"></div>
+            <div class="fill" style="width:60.4%"></div>
+            <div class="coinflip"></div>
+          </div>
+          <div class="rate-val">60%</div>
+          <div class="rate-n">53 seats</div>
+        </div>
+        <div class="rate wide" data-side="spy" tabindex="0"
+             data-tip="Morgana: 29W 22L over 51 seats — 57% (95% CI 43%–69%)">
+          <div class="rate-label">Morgana</div>
+          <div class="rate-track">
+            <div class="ci" style="left:43.3%;width:26.2%"></div>
+            <div class="fill" style="width:56.9%"></div>
+            <div class="coinflip"></div>
+          </div>
+          <div class="rate-val">57%</div>
+          <div class="rate-n">51 seats</div>
+        </div>
+        <div class="rate wide" data-side="res" tabindex="0"
+             data-tip="Merlin: 20W 30L over 50 seats — 40% (95% CI 28%–54%)">
+          <div class="rate-label">Merlin</div>
+          <div class="rate-track">
+            <div class="ci" style="left:27.6%;width:26.2%"></div>
+            <div class="fill" style="width:40.0%"></div>
+            <div class="coinflip"></div>
+          </div>
+          <div class="rate-val">40%</div>
+          <div class="rate-n">50 seats</div>
+        </div>
+        <div class="rate wide" data-side="res" tabindex="0"
+             data-tip="Resistance: 45W 68L over 113 seats — 40% (95% CI 31%–49%)">
+          <div class="rate-label">Resistance</div>
+          <div class="rate-track">
+            <div class="ci" style="left:31.3%;width:17.8%"></div>
+            <div class="fill" style="width:39.8%"></div>
+            <div class="coinflip"></div>
+          </div>
+          <div class="rate-val">40%</div>
+          <div class="rate-n">113 seats</div>
+        </div>
+        <div class="rate wide" data-side="res" tabindex="0"
+             data-tip="Percival: 20W 31L over 51 seats — 39% (95% CI 27%–53%)">
+          <div class="rate-label">Percival</div>
+          <div class="rate-track">
+            <div class="ci" style="left:27.0%;width:25.9%"></div>
+            <div class="fill" style="width:39.2%"></div>
+            <div class="coinflip"></div>
+          </div>
+          <div class="rate-val">39%</div>
+          <div class="rate-n">51 seats</div>
+        </div></div></div>
+  </section>
+
+  <section>
+    <h3>Loyal vs evil, per player</h3>
+    <p class="lede">Each row is one player: the blue dot is their win rate on Resistance, the
+      red dot on Spy, and the pale bar behind each is its 95% interval. Sorted by how far
+      evil they lean.</p>
+    <div class="legend">
+      <span><i class="k-res"></i>Resistance</span>
+      <span><i class="k-spy"></i>Spy</span>
+      <span><i class="k-ci"></i>95% confidence interval</span>
+      <span>│ 50% coin flip</span>
+    </div>
+    <div class="db">
+        <div class="db-row thin">
+          <div class="db-name">Raksbro</div>
+          <div class="db-track">
+            <div class="coinflip"></div>
+            <div class="db-link" style="left:20.0%;width:55.0%"></div><div class="db-ci res" style="left:3.6%;width:58.8%"></div><div class="db-dot res" style="left:20.0%" tabindex="0" data-tip="Raksbro as Resistance: 1W 4L — 20% (95% CI 4%–62%)"></div><div class="db-ci spy" style="left:30.1%;width:65.4%"></div><div class="db-dot spy" style="left:75.0%" tabindex="0" data-tip="Raksbro as Spy: 3W 1L — 75% (95% CI 30%–95%)"></div>
+          </div>
+          <div class="db-gap">+55</div>
+        </div>
+        <div class="db-row">
+          <div class="db-name">SandyK</div>
+          <div class="db-track">
+            <div class="coinflip"></div>
+            <div class="db-link" style="left:31.2%;width:52.1%"></div><div class="db-ci res" style="left:14.2%;width:41.4%"></div><div class="db-dot res" style="left:31.2%" tabindex="0" data-tip="SandyK as Resistance: 5W 11L — 31% (95% CI 14%–56%)"></div><div class="db-ci spy" style="left:43.6%;width:53.3%"></div><div class="db-dot spy" style="left:83.3%" tabindex="0" data-tip="SandyK as Spy: 5W 1L — 83% (95% CI 44%–97%)"></div>
+          </div>
+          <div class="db-gap">+52</div>
+        </div>
+        <div class="db-row">
+          <div class="db-name">saicha</div>
+          <div class="db-track">
+            <div class="coinflip"></div>
+            <div class="db-link" style="left:28.6%;width:29.1%"></div><div class="db-ci res" style="left:16.3%;width:28.7%"></div><div class="db-dot res" style="left:28.6%" tabindex="0" data-tip="saicha as Resistance: 10W 25L — 29% (95% CI 16%–45%)"></div><div class="db-ci spy" style="left:38.9%;width:35.5%"></div><div class="db-dot spy" style="left:57.7%" tabindex="0" data-tip="saicha as Spy: 15W 11L — 58% (95% CI 39%–74%)"></div>
+          </div>
+          <div class="db-gap">+29</div>
+        </div>
+        <div class="db-row">
+          <div class="db-name">Vamsi541605</div>
+          <div class="db-track">
+            <div class="coinflip"></div>
+            <div class="db-link" style="left:36.4%;width:23.6%"></div><div class="db-ci res" style="left:15.2%;width:49.5%"></div><div class="db-dot res" style="left:36.4%" tabindex="0" data-tip="Vamsi541605 as Resistance: 4W 7L — 36% (95% CI 15%–65%)"></div><div class="db-ci spy" style="left:23.1%;width:65.2%"></div><div class="db-dot spy" style="left:60.0%" tabindex="0" data-tip="Vamsi541605 as Spy: 3W 2L — 60% (95% CI 23%–88%)"></div>
+          </div>
+          <div class="db-gap">+24</div>
+        </div>
+        <div class="db-row">
+          <div class="db-name">axehaybond</div>
+          <div class="db-track">
+            <div class="coinflip"></div>
+            <div class="db-link" style="left:48.3%;width:23.2%"></div><div class="db-ci res" style="left:31.4%;width:34.2%"></div><div class="db-dot res" style="left:48.3%" tabindex="0" data-tip="axehaybond as Resistance: 14W 15L — 48% (95% CI 31%–66%)"></div><div class="db-ci spy" style="left:45.4%;width:42.9%"></div><div class="db-dot spy" style="left:71.4%" tabindex="0" data-tip="axehaybond as Spy: 10W 4L — 71% (95% CI 45%–88%)"></div>
+          </div>
+          <div class="db-gap">+23</div>
+        </div>
+        <div class="db-row">
+          <div class="db-name">loyalvillager123</div>
+          <div class="db-track">
+            <div class="coinflip"></div>
+            <div class="db-link" style="left:38.7%;width:19.2%"></div><div class="db-ci res" style="left:23.7%;width:32.4%"></div><div class="db-dot res" style="left:38.7%" tabindex="0" data-tip="loyalvillager123 as Resistance: 12W 19L — 39% (95% CI 24%–56%)"></div><div class="db-ci spy" style="left:36.3%;width:40.6%"></div><div class="db-dot spy" style="left:57.9%" tabindex="0" data-tip="loyalvillager123 as Spy: 11W 8L — 58% (95% CI 36%–77%)"></div>
+          </div>
+          <div class="db-gap">+19</div>
+        </div>
+        <div class="db-row">
+          <div class="db-name">lihitveer</div>
+          <div class="db-track">
+            <div class="coinflip"></div>
+            <div class="db-link" style="left:31.2%;width:15.4%"></div><div class="db-ci res" style="left:14.2%;width:41.4%"></div><div class="db-dot res" style="left:31.2%" tabindex="0" data-tip="lihitveer as Resistance: 5W 11L — 31% (95% CI 14%–56%)"></div><div class="db-ci spy" style="left:24.8%;width:45.1%"></div><div class="db-dot spy" style="left:46.7%" tabindex="0" data-tip="lihitveer as Spy: 7W 8L — 47% (95% CI 25%–70%)"></div>
+          </div>
+          <div class="db-gap">+15</div>
+        </div>
+        <div class="db-row">
+          <div class="db-name">Srinivas</div>
+          <div class="db-track">
+            <div class="coinflip"></div>
+            <div class="db-link" style="left:43.5%;width:14.9%"></div><div class="db-ci res" style="left:25.6%;width:37.6%"></div><div class="db-dot res" style="left:43.5%" tabindex="0" data-tip="Srinivas as Resistance: 10W 13L — 43% (95% CI 26%–63%)"></div><div class="db-ci spy" style="left:32.0%;width:48.7%"></div><div class="db-dot spy" style="left:58.3%" tabindex="0" data-tip="Srinivas as Spy: 7W 5L — 58% (95% CI 32%–81%)"></div>
+          </div>
+          <div class="db-gap">+15</div>
+        </div>
+        <div class="db-row">
+          <div class="db-name">nabbina</div>
+          <div class="db-track">
+            <div class="coinflip"></div>
+            <div class="db-link" style="left:50.0%;width:5.6%"></div><div class="db-ci res" style="left:26.8%;width:46.4%"></div><div class="db-dot res" style="left:50.0%" tabindex="0" data-tip="nabbina as Resistance: 7W 7L — 50% (95% CI 27%–73%)"></div><div class="db-ci spy" style="left:26.7%;width:54.5%"></div><div class="db-dot spy" style="left:55.6%" tabindex="0" data-tip="nabbina as Spy: 5W 4L — 56% (95% CI 27%–81%)"></div>
+          </div>
+          <div class="db-gap">+6</div>
+        </div>
+        <div class="db-row">
+          <div class="db-name">Saiteja10</div>
+          <div class="db-track">
+            <div class="coinflip"></div>
+            <div class="db-link" style="left:66.7%;width:2.6%"></div><div class="db-ci res" style="left:42.4%;width:45.0%"></div><div class="db-dot res" style="left:69.2%" tabindex="0" data-tip="Saiteja10 as Resistance: 9W 4L — 69% (95% CI 42%–87%)"></div><div class="db-ci spy" style="left:43.7%;width:40.0%"></div><div class="db-dot spy" style="left:66.7%" tabindex="0" data-tip="Saiteja10 as Spy: 12W 6L — 67% (95% CI 44%–84%)"></div>
+          </div>
+          <div class="db-gap">−3</div>
+        </div>
+        <div class="db-row">
+          <div class="db-name">logstark007</div>
+          <div class="db-track">
+            <div class="coinflip"></div>
+            <div class="db-link" style="left:30.0%;width:5.3%"></div><div class="db-ci res" style="left:17.3%;width:41.4%"></div><div class="db-dot res" style="left:35.3%" tabindex="0" data-tip="logstark007 as Resistance: 6W 11L — 35% (95% CI 17%–59%)"></div><div class="db-ci spy" style="left:10.8%;width:49.5%"></div><div class="db-dot spy" style="left:30.0%" tabindex="0" data-tip="logstark007 as Spy: 3W 7L — 30% (95% CI 11%–60%)"></div>
+          </div>
+          <div class="db-gap">−5</div>
+        </div>
+        <div class="db-row thin">
+          <div class="db-name">Darthvader619</div>
+          <div class="db-track">
+            <div class="coinflip"></div>
+            <div class="db-ci res" style="left:15.0%;width:70.0%"></div><div class="db-dot res" style="left:50.0%" tabindex="0" data-tip="Darthvader619 as Resistance: 2W 2L — 50% (95% CI 15%–85%)"></div>
+          </div>
+          <div class="db-gap">—</div>
+        </div></div>
+    <div class="axis"><div></div>
+      <div class="axis-scale"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+      <div></div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Loyal vs evil, by table size</h3>
+    <p class="lede">The same read applied to table sizes. Five-player games are where the
+      group's spies are most dominant; six-player games are the one format that runs the
+      other way, on the thinnest evidence here.</p>
+    <div class="panel"><div class="db">
+        <div class="db-row">
+          <div class="db-name">5p tables <em>65 seats</em></div>
+          <div class="db-track">
+            <div class="coinflip"></div>
+            <div class="db-link" style="left:30.8%;width:38.5%"></div>
+            <div class="db-ci res" style="left:18.6%;width:27.9%"></div>
+            <div class="db-ci spy" style="left:50.0%;width:33.5%"></div>
+            <div class="db-dot res" style="left:30.8%" tabindex="0"
+                 data-tip="5p Resistance: 12W 27L over 39 seats — 31% (95% CI 19%–46%)"></div>
+            <div class="db-dot spy" style="left:69.2%" tabindex="0"
+                 data-tip="5p Spy: 18W 8L over 26 seats — 69% (95% CI 50%–83%)"></div>
+          </div>
+          <div class="db-gap">+38</div>
+        </div>
+        <div class="db-row">
+          <div class="db-name">6p tables <em>26 seats</em></div>
+          <div class="db-track">
+            <div class="coinflip"></div>
+            <div class="db-link" style="left:40.0%;width:35.0%"></div>
+            <div class="db-ci res" style="left:50.5%;width:39.3%"></div>
+            <div class="db-ci spy" style="left:16.8%;width:51.9%"></div>
+            <div class="db-dot res" style="left:75.0%" tabindex="0"
+                 data-tip="6p Resistance: 12W 4L over 16 seats — 75% (95% CI 51%–90%)"></div>
+            <div class="db-dot spy" style="left:40.0%" tabindex="0"
+                 data-tip="6p Spy: 4W 6L over 10 seats — 40% (95% CI 17%–69%)"></div>
+          </div>
+          <div class="db-gap">−35</div>
+        </div>
+        <div class="db-row">
+          <div class="db-name">7p tables <em>136 seats</em></div>
+          <div class="db-track">
+            <div class="coinflip"></div>
+            <div class="db-link" style="left:42.3%;width:14.6%"></div>
+            <div class="db-ci res" style="left:32.0%;width:21.4%"></div>
+            <div class="db-ci spy" style="left:44.1%;width:24.7%"></div>
+            <div class="db-dot res" style="left:42.3%" tabindex="0"
+                 data-tip="7p Resistance: 33W 45L over 78 seats — 42% (95% CI 32%–53%)"></div>
+            <div class="db-dot spy" style="left:56.9%" tabindex="0"
+                 data-tip="7p Spy: 33W 25L over 58 seats — 57% (95% CI 44%–69%)"></div>
+          </div>
+          <div class="db-gap">+15</div>
+        </div>
+        <div class="db-row">
+          <div class="db-name">8p tables <em>82 seats</em></div>
+          <div class="db-track">
+            <div class="coinflip"></div>
+            <div class="db-link" style="left:39.2%;width:18.8%"></div>
+            <div class="db-ci res" style="left:27.0%;width:25.9%"></div>
+            <div class="db-ci spy" style="left:40.8%;width:32.8%"></div>
+            <div class="db-dot res" style="left:39.2%" tabindex="0"
+                 data-tip="8p Resistance: 20W 31L over 51 seats — 39% (95% CI 27%–53%)"></div>
+            <div class="db-dot spy" style="left:58.1%" tabindex="0"
+                 data-tip="8p Spy: 18W 13L over 31 seats — 58% (95% CI 41%–74%)"></div>
+          </div>
+          <div class="db-gap">+19</div>
+        </div>
+        <div class="db-row">
+          <div class="db-name">9p tables <em>36 seats</em></div>
+          <div class="db-track">
+            <div class="coinflip"></div>
+            <div class="db-link" style="left:28.0%;width:26.5%"></div>
+            <div class="db-ci res" style="left:14.3%;width:33.3%"></div>
+            <div class="db-ci spy" style="left:28.0%;width:50.7%"></div>
+            <div class="db-dot res" style="left:28.0%" tabindex="0"
+                 data-tip="9p Resistance: 7W 18L over 25 seats — 28% (95% CI 14%–48%)"></div>
+            <div class="db-dot spy" style="left:54.5%" tabindex="0"
+                 data-tip="9p Spy: 6W 5L over 11 seats — 55% (95% CI 28%–79%)"></div>
+          </div>
+          <div class="db-gap">+27</div>
+        </div>
+        <div class="db-row thin">
+          <div class="db-name">10p tables <em>7 seats</em></div>
+          <div class="db-track">
+            <div class="coinflip"></div>
+            <div class="db-link" style="left:20.0%;width:80.0%"></div>
+            <div class="db-ci res" style="left:3.6%;width:58.8%"></div>
+            <div class="db-ci spy" style="left:34.2%;width:65.8%"></div>
+            <div class="db-dot res" style="left:20.0%" tabindex="0"
+                 data-tip="10p Resistance: 1W 4L over 5 seats — 20% (95% CI 4%–62%)"></div>
+            <div class="db-dot spy" style="left:100.0%" tabindex="0"
+                 data-tip="10p Spy: 2W 0L over 2 seats — 100% (95% CI 34%–100%)"></div>
+          </div>
+          <div class="db-gap">+80</div>
+        </div></div>
+      <div class="axis"><div></div>
+        <div class="axis-scale"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+        <div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Player sheets</h3>
+    <p class="lede">Role and table-size splits. Nearly everything at this depth is under
+      the 8-game line and drawn faded — read the shape, not the number.</p>
+    <div class="cards">
+      <article class="pcard">
+        <header>
+          <div>
+            <h3 class="pname">axehaybond</h3>
+            <p class="pepithet">The Spymaster</p>
+          </div>
+          <div class="phero">
+            <span class="phero-num">56%</span>
+            <span class="phero-cap">24W 19L<br>
+              <span class="ci-text">CI 41%–70%</span></span>
+          </div>
+        </header>
+        <p class="pmeta"><span class="chip gold">1587 · Gold</span>
+           43 games · 6.7 h · joined 2026-09-05</p>
+        <div class="rates">
+      <div class="rate" data-side="res" data-tip="Resistance: 6W 9L in 15 games — 40% (95% CI 20%–64%)" tabindex="0">
+        <div class="rate-label">Resistance</div>
+        <div class="rate-track">
+          <div class="ci" style="left:19.8%;width:44.4%"></div>
+          <div class="fill" style="width:40.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">40%</div>
+        <div class="rate-n">6W 9L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Percival: 4W 3L in 7 games — 57% (95% CI 25%–84%)" tabindex="0">
+        <div class="rate-label">Percival</div>
+        <div class="rate-track">
+          <div class="ci" style="left:25.0%;width:59.1%"></div>
+          <div class="fill" style="width:57.1%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">57%</div>
+        <div class="rate-n">4W 3L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Merlin: 4W 3L in 7 games — 57% (95% CI 25%–84%)" tabindex="0">
+        <div class="rate-label">Merlin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:25.0%;width:59.1%"></div>
+          <div class="fill" style="width:57.1%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">57%</div>
+        <div class="rate-n">4W 3L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Assassin: 5W 1L in 6 games — 83% (95% CI 44%–97%)" tabindex="0">
+        <div class="rate-label">Assassin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:43.6%;width:53.3%"></div>
+          <div class="fill" style="width:83.3%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">83%</div>
+        <div class="rate-n">5W 1L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Morgana: 3W 3L in 6 games — 50% (95% CI 19%–81%)" tabindex="0">
+        <div class="rate-label">Morgana</div>
+        <div class="rate-track">
+          <div class="ci" style="left:18.8%;width:62.5%"></div>
+          <div class="fill" style="width:50.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">50%</div>
+        <div class="rate-n">3W 3L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Spy: 2W 0L in 2 games — 100% (95% CI 34%–100%)" tabindex="0">
+        <div class="rate-label">Spy</div>
+        <div class="rate-track">
+          <div class="ci" style="left:34.2%;width:65.8%"></div>
+          <div class="fill" style="width:100.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">100%</div>
+        <div class="rate-n">2W 0L</div>
+      </div></div>
+        <div class="sizes">
+          <div class="size" data-tip="5p tables: 7W 6L — 54%" tabindex="0">
+            <div class="size-bar"><div style="height:54%"></div></div>
+            <div class="size-n">5p</div>
+            <div class="size-games">13g</div>
+          </div>
+          <div class="size thin" data-tip="6p tables: 3W 1L — 75% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:75%"></div></div>
+            <div class="size-n">6p</div>
+            <div class="size-games">4g</div>
+          </div>
+          <div class="size" data-tip="7p tables: 6W 7L — 46%" tabindex="0">
+            <div class="size-bar"><div style="height:46%"></div></div>
+            <div class="size-n">7p</div>
+            <div class="size-games">13g</div>
+          </div>
+          <div class="size" data-tip="8p tables: 7W 3L — 70%" tabindex="0">
+            <div class="size-bar"><div style="height:70%"></div></div>
+            <div class="size-n">8p</div>
+            <div class="size-games">10g</div>
+          </div>
+          <div class="size thin" data-tip="9p tables: 1W 2L — 33% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:33%"></div></div>
+            <div class="size-n">9p</div>
+            <div class="size-games">3g</div>
+          </div></div>
+      </article>
+      <article class="pcard">
+        <header>
+          <div>
+            <h3 class="pname">Saiteja10</h3>
+            <p class="pepithet">The Proven</p>
+          </div>
+          <div class="phero">
+            <span class="phero-num">68%</span>
+            <span class="phero-cap">21W 10L<br>
+              <span class="ci-text">CI 50%–81%</span></span>
+          </div>
+        </header>
+        <p class="pmeta"><span class="chip gold">Gold</span>
+           31 games · 4.8 h · joined 2026-09-09</p>
+        <div class="rates">
+      <div class="rate" data-side="spy" data-tip="Assassin: 5W 5L in 10 games — 50% (95% CI 24%–76%)" tabindex="0">
+        <div class="rate-label">Assassin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:23.7%;width:52.7%"></div>
+          <div class="fill" style="width:50.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">50%</div>
+        <div class="rate-n">5W 5L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Percival: 4W 2L in 6 games — 67% (95% CI 30%–90%)" tabindex="0">
+        <div class="rate-label">Percival</div>
+        <div class="rate-track">
+          <div class="ci" style="left:30.0%;width:60.3%"></div>
+          <div class="fill" style="width:66.7%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">67%</div>
+        <div class="rate-n">4W 2L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Resistance: 3W 2L in 5 games — 60% (95% CI 23%–88%)" tabindex="0">
+        <div class="rate-label">Resistance</div>
+        <div class="rate-track">
+          <div class="ci" style="left:23.1%;width:65.2%"></div>
+          <div class="fill" style="width:60.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">60%</div>
+        <div class="rate-n">3W 2L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Spy: 4W 1L in 5 games — 80% (95% CI 38%–96%)" tabindex="0">
+        <div class="rate-label">Spy</div>
+        <div class="rate-track">
+          <div class="ci" style="left:37.6%;width:58.8%"></div>
+          <div class="fill" style="width:80.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">80%</div>
+        <div class="rate-n">4W 1L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Morgana: 3W 0L in 3 games — 100% (95% CI 44%–100%)" tabindex="0">
+        <div class="rate-label">Morgana</div>
+        <div class="rate-track">
+          <div class="ci" style="left:43.8%;width:56.2%"></div>
+          <div class="fill" style="width:100.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">100%</div>
+        <div class="rate-n">3W 0L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Merlin: 2W 0L in 2 games — 100% (95% CI 34%–100%)" tabindex="0">
+        <div class="rate-label">Merlin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:34.2%;width:65.8%"></div>
+          <div class="fill" style="width:100.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">100%</div>
+        <div class="rate-n">2W 0L</div>
+      </div></div>
+        <div class="sizes">
+          <div class="size thin" data-tip="6p tables: 1W 2L — 33% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:33%"></div></div>
+            <div class="size-n">6p</div>
+            <div class="size-games">3g</div>
+          </div>
+          <div class="size" data-tip="7p tables: 11W 4L — 73%" tabindex="0">
+            <div class="size-bar"><div style="height:73%"></div></div>
+            <div class="size-n">7p</div>
+            <div class="size-games">15g</div>
+          </div>
+          <div class="size" data-tip="8p tables: 7W 3L — 70%" tabindex="0">
+            <div class="size-bar"><div style="height:70%"></div></div>
+            <div class="size-n">8p</div>
+            <div class="size-games">10g</div>
+          </div>
+          <div class="size thin" data-tip="9p tables: 2W 1L — 67% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:67%"></div></div>
+            <div class="size-n">9p</div>
+            <div class="size-games">3g</div>
+          </div></div>
+      </article>
+      <article class="pcard">
+        <header>
+          <div>
+            <h3 class="pname">SandyK</h3>
+            <p class="pepithet">The Suspected</p>
+          </div>
+          <div class="phero">
+            <span class="phero-num">45%</span>
+            <span class="phero-cap">10W 12L<br>
+              <span class="ci-text">CI 27%–65%</span></span>
+          </div>
+        </header>
+        <p class="pmeta"><span class="chip silver">Silver</span>
+           22 games · 3.7 h · joined 2026-09-05</p>
+        <div class="rates">
+      <div class="rate thin" data-side="res" data-tip="Merlin: 3W 4L in 7 games — 43% (95% CI 16%–75%)" tabindex="0">
+        <div class="rate-label">Merlin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:15.8%;width:59.1%"></div>
+          <div class="fill" style="width:42.9%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">43%</div>
+        <div class="rate-n">3W 4L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Resistance: 1W 6L in 7 games — 14% (95% CI 3%–51%)" tabindex="0">
+        <div class="rate-label">Resistance</div>
+        <div class="rate-track">
+          <div class="ci" style="left:2.6%;width:48.7%"></div>
+          <div class="fill" style="width:14.3%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">14%</div>
+        <div class="rate-n">1W 6L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Morgana: 3W 0L in 3 games — 100% (95% CI 44%–100%)" tabindex="0">
+        <div class="rate-label">Morgana</div>
+        <div class="rate-track">
+          <div class="ci" style="left:43.8%;width:56.2%"></div>
+          <div class="fill" style="width:100.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">100%</div>
+        <div class="rate-n">3W 0L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Assassin: 2W 1L in 3 games — 67% (95% CI 21%–94%)" tabindex="0">
+        <div class="rate-label">Assassin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:20.8%;width:73.1%"></div>
+          <div class="fill" style="width:66.7%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">67%</div>
+        <div class="rate-n">2W 1L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Percival: 1W 1L in 2 games — 50% (95% CI 9%–91%)" tabindex="0">
+        <div class="rate-label">Percival</div>
+        <div class="rate-track">
+          <div class="ci" style="left:9.5%;width:81.1%"></div>
+          <div class="fill" style="width:50.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">50%</div>
+        <div class="rate-n">1W 1L</div>
+      </div></div>
+        <div class="sizes">
+          <div class="size" data-tip="5p tables: 6W 3L — 67%" tabindex="0">
+            <div class="size-bar"><div style="height:67%"></div></div>
+            <div class="size-n">5p</div>
+            <div class="size-games">9g</div>
+          </div>
+          <div class="size thin" data-tip="6p tables: 1W 0L — 100% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:100%"></div></div>
+            <div class="size-n">6p</div>
+            <div class="size-games">1g</div>
+          </div>
+          <div class="size thin" data-tip="7p tables: 1W 5L — 17% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:17%"></div></div>
+            <div class="size-n">7p</div>
+            <div class="size-games">6g</div>
+          </div>
+          <div class="size thin" data-tip="8p tables: 2W 3L — 40% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:40%"></div></div>
+            <div class="size-n">8p</div>
+            <div class="size-games">5g</div>
+          </div>
+          <div class="size thin" data-tip="9p tables: 0W 1L — 0% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:0%"></div></div>
+            <div class="size-n">9p</div>
+            <div class="size-games">1g</div>
+          </div></div>
+      </article>
+      <article class="pcard">
+        <header>
+          <div>
+            <h3 class="pname">Srinivas</h3>
+            <p class="pepithet">The Coin Flip</p>
+          </div>
+          <div class="phero">
+            <span class="phero-num">49%</span>
+            <span class="phero-cap">17W 18L<br>
+              <span class="ci-text">CI 33%–64%</span></span>
+          </div>
+        </header>
+        <p class="pmeta"><span class="chip silver">Silver</span>
+           35 games · 5.6 h · joined 2026-09-09</p>
+        <div class="rates">
+      <div class="rate" data-side="res" data-tip="Resistance: 7W 5L in 12 games — 58% (95% CI 32%–81%)" tabindex="0">
+        <div class="rate-label">Resistance</div>
+        <div class="rate-track">
+          <div class="ci" style="left:32.0%;width:48.7%"></div>
+          <div class="fill" style="width:58.3%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">58%</div>
+        <div class="rate-n">7W 5L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Percival: 1W 6L in 7 games — 14% (95% CI 3%–51%)" tabindex="0">
+        <div class="rate-label">Percival</div>
+        <div class="rate-track">
+          <div class="ci" style="left:2.6%;width:48.7%"></div>
+          <div class="fill" style="width:14.3%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">14%</div>
+        <div class="rate-n">1W 6L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Spy: 3W 2L in 5 games — 60% (95% CI 23%–88%)" tabindex="0">
+        <div class="rate-label">Spy</div>
+        <div class="rate-track">
+          <div class="ci" style="left:23.1%;width:65.2%"></div>
+          <div class="fill" style="width:60.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">60%</div>
+        <div class="rate-n">3W 2L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Assassin: 2W 2L in 4 games — 50% (95% CI 15%–85%)" tabindex="0">
+        <div class="rate-label">Assassin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:15.0%;width:70.0%"></div>
+          <div class="fill" style="width:50.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">50%</div>
+        <div class="rate-n">2W 2L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Merlin: 2W 2L in 4 games — 50% (95% CI 15%–85%)" tabindex="0">
+        <div class="rate-label">Merlin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:15.0%;width:70.0%"></div>
+          <div class="fill" style="width:50.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">50%</div>
+        <div class="rate-n">2W 2L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Morgana: 2W 1L in 3 games — 67% (95% CI 21%–94%)" tabindex="0">
+        <div class="rate-label">Morgana</div>
+        <div class="rate-track">
+          <div class="ci" style="left:20.8%;width:73.1%"></div>
+          <div class="fill" style="width:66.7%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">67%</div>
+        <div class="rate-n">2W 1L</div>
+      </div></div>
+        <div class="sizes">
+          <div class="size thin" data-tip="5p tables: 0W 1L — 0% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:0%"></div></div>
+            <div class="size-n">5p</div>
+            <div class="size-games">1g</div>
+          </div>
+          <div class="size thin" data-tip="6p tables: 1W 1L — 50% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:50%"></div></div>
+            <div class="size-n">6p</div>
+            <div class="size-games">2g</div>
+          </div>
+          <div class="size" data-tip="7p tables: 9W 10L — 47%" tabindex="0">
+            <div class="size-bar"><div style="height:47%"></div></div>
+            <div class="size-n">7p</div>
+            <div class="size-games">19g</div>
+          </div>
+          <div class="size" data-tip="8p tables: 4W 6L — 40%" tabindex="0">
+            <div class="size-bar"><div style="height:40%"></div></div>
+            <div class="size-n">8p</div>
+            <div class="size-games">10g</div>
+          </div>
+          <div class="size thin" data-tip="9p tables: 3W 0L — 100% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:100%"></div></div>
+            <div class="size-n">9p</div>
+            <div class="size-games">3g</div>
+          </div></div>
+      </article>
+      <article class="pcard">
+        <header>
+          <div>
+            <h3 class="pname">lihitveer</h3>
+            <p class="pepithet">Born Traitor</p>
+          </div>
+          <div class="phero">
+            <span class="phero-num">39%</span>
+            <span class="phero-cap">12W 19L<br>
+              <span class="ci-text">CI 24%–56%</span></span>
+          </div>
+        </header>
+        <p class="pmeta"><span class="chip silver">Silver</span>
+           31 games · 5.0 h · joined 2026-09-09</p>
+        <div class="rates">
+      <div class="rate" data-side="res" data-tip="Resistance: 3W 5L in 8 games — 38% (95% CI 14%–69%)" tabindex="0">
+        <div class="rate-label">Resistance</div>
+        <div class="rate-track">
+          <div class="ci" style="left:13.7%;width:55.7%"></div>
+          <div class="fill" style="width:37.5%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">38%</div>
+        <div class="rate-n">3W 5L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Morgana: 3W 2L in 5 games — 60% (95% CI 23%–88%)" tabindex="0">
+        <div class="rate-label">Morgana</div>
+        <div class="rate-track">
+          <div class="ci" style="left:23.1%;width:65.2%"></div>
+          <div class="fill" style="width:60.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">60%</div>
+        <div class="rate-n">3W 2L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Assassin: 2W 3L in 5 games — 40% (95% CI 12%–77%)" tabindex="0">
+        <div class="rate-label">Assassin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:11.8%;width:65.2%"></div>
+          <div class="fill" style="width:40.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">40%</div>
+        <div class="rate-n">2W 3L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Spy: 2W 3L in 5 games — 40% (95% CI 12%–77%)" tabindex="0">
+        <div class="rate-label">Spy</div>
+        <div class="rate-track">
+          <div class="ci" style="left:11.8%;width:65.2%"></div>
+          <div class="fill" style="width:40.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">40%</div>
+        <div class="rate-n">2W 3L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Percival: 1W 3L in 4 games — 25% (95% CI 5%–70%)" tabindex="0">
+        <div class="rate-label">Percival</div>
+        <div class="rate-track">
+          <div class="ci" style="left:4.6%;width:65.4%"></div>
+          <div class="fill" style="width:25.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">25%</div>
+        <div class="rate-n">1W 3L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Merlin: 1W 3L in 4 games — 25% (95% CI 5%–70%)" tabindex="0">
+        <div class="rate-label">Merlin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:4.6%;width:65.4%"></div>
+          <div class="fill" style="width:25.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">25%</div>
+        <div class="rate-n">1W 3L</div>
+      </div></div>
+        <div class="sizes">
+          <div class="size thin" data-tip="5p tables: 1W 4L — 20% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:20%"></div></div>
+            <div class="size-n">5p</div>
+            <div class="size-games">5g</div>
+          </div>
+          <div class="size thin" data-tip="6p tables: 1W 0L — 100% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:100%"></div></div>
+            <div class="size-n">6p</div>
+            <div class="size-games">1g</div>
+          </div>
+          <div class="size" data-tip="7p tables: 6W 9L — 40%" tabindex="0">
+            <div class="size-bar"><div style="height:40%"></div></div>
+            <div class="size-n">7p</div>
+            <div class="size-games">15g</div>
+          </div>
+          <div class="size thin" data-tip="8p tables: 4W 3L — 57% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:57%"></div></div>
+            <div class="size-n">8p</div>
+            <div class="size-games">7g</div>
+          </div>
+          <div class="size thin" data-tip="9p tables: 0W 3L — 0% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:0%"></div></div>
+            <div class="size-n">9p</div>
+            <div class="size-games">3g</div>
+          </div></div>
+      </article>
+      <article class="pcard">
+        <header>
+          <div>
+            <h3 class="pname">logstark007</h3>
+            <p class="pepithet">The Obvious Villain</p>
+          </div>
+          <div class="phero">
+            <span class="phero-num">33%</span>
+            <span class="phero-cap">9W 18L<br>
+              <span class="ci-text">CI 19%–52%</span></span>
+          </div>
+        </header>
+        <p class="pmeta"><span class="chip silver">Silver</span>
+           27 games · 4.1 h · joined 2026-09-05</p>
+        <div class="rates">
+      <div class="rate" data-side="res" data-tip="Resistance: 4W 5L in 9 games — 44% (95% CI 19%–73%)" tabindex="0">
+        <div class="rate-label">Resistance</div>
+        <div class="rate-track">
+          <div class="ci" style="left:18.9%;width:54.5%"></div>
+          <div class="fill" style="width:44.4%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">44%</div>
+        <div class="rate-n">4W 5L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Merlin: 1W 4L in 5 games — 20% (95% CI 4%–62%)" tabindex="0">
+        <div class="rate-label">Merlin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:3.6%;width:58.8%"></div>
+          <div class="fill" style="width:20.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">20%</div>
+        <div class="rate-n">1W 4L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Morgana: 1W 4L in 5 games — 20% (95% CI 4%–62%)" tabindex="0">
+        <div class="rate-label">Morgana</div>
+        <div class="rate-track">
+          <div class="ci" style="left:3.6%;width:58.8%"></div>
+          <div class="fill" style="width:20.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">20%</div>
+        <div class="rate-n">1W 4L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Percival: 1W 2L in 3 games — 33% (95% CI 6%–79%)" tabindex="0">
+        <div class="rate-label">Percival</div>
+        <div class="rate-track">
+          <div class="ci" style="left:6.1%;width:73.1%"></div>
+          <div class="fill" style="width:33.3%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">33%</div>
+        <div class="rate-n">1W 2L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Spy: 1W 2L in 3 games — 33% (95% CI 6%–79%)" tabindex="0">
+        <div class="rate-label">Spy</div>
+        <div class="rate-track">
+          <div class="ci" style="left:6.1%;width:73.1%"></div>
+          <div class="fill" style="width:33.3%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">33%</div>
+        <div class="rate-n">1W 2L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Assassin: 1W 1L in 2 games — 50% (95% CI 9%–91%)" tabindex="0">
+        <div class="rate-label">Assassin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:9.5%;width:81.1%"></div>
+          <div class="fill" style="width:50.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">50%</div>
+        <div class="rate-n">1W 1L</div>
+      </div></div>
+        <div class="sizes">
+          <div class="size thin" data-tip="5p tables: 3W 4L — 43% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:43%"></div></div>
+            <div class="size-n">5p</div>
+            <div class="size-games">7g</div>
+          </div>
+          <div class="size thin" data-tip="6p tables: 1W 2L — 33% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:33%"></div></div>
+            <div class="size-n">6p</div>
+            <div class="size-games">3g</div>
+          </div>
+          <div class="size" data-tip="7p tables: 5W 5L — 50%" tabindex="0">
+            <div class="size-bar"><div style="height:50%"></div></div>
+            <div class="size-n">7p</div>
+            <div class="size-games">10g</div>
+          </div>
+          <div class="size thin" data-tip="8p tables: 0W 4L — 0% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:0%"></div></div>
+            <div class="size-n">8p</div>
+            <div class="size-games">4g</div>
+          </div>
+          <div class="size thin" data-tip="9p tables: 0W 3L — 0% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:0%"></div></div>
+            <div class="size-n">9p</div>
+            <div class="size-games">3g</div>
+          </div></div>
+      </article>
+      <article class="pcard">
+        <header>
+          <div>
+            <h3 class="pname">loyalvillager123</h3>
+            <p class="pepithet">Merlin's Curse</p>
+          </div>
+          <div class="phero">
+            <span class="phero-num">46%</span>
+            <span class="phero-cap">23W 27L<br>
+              <span class="ci-text">CI 33%–60%</span></span>
+          </div>
+        </header>
+        <p class="pmeta"><span class="chip silver">Silver</span>
+           50 games · 8.0 h · joined 2026-09-05</p>
+        <div class="rates">
+      <div class="rate" data-side="res" data-tip="Resistance: 4W 11L in 15 games — 27% (95% CI 11%–52%)" tabindex="0">
+        <div class="rate-label">Resistance</div>
+        <div class="rate-track">
+          <div class="ci" style="left:10.9%;width:41.1%"></div>
+          <div class="fill" style="width:26.7%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">27%</div>
+        <div class="rate-n">4W 11L</div>
+      </div>
+      <div class="rate" data-side="res" data-tip="Percival: 7W 3L in 10 games — 70% (95% CI 40%–89%)" tabindex="0">
+        <div class="rate-label">Percival</div>
+        <div class="rate-track">
+          <div class="ci" style="left:39.7%;width:49.5%"></div>
+          <div class="fill" style="width:70.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">70%</div>
+        <div class="rate-n">7W 3L</div>
+      </div>
+      <div class="rate" data-side="spy" data-tip="Morgana: 5W 4L in 9 games — 56% (95% CI 27%–81%)" tabindex="0">
+        <div class="rate-label">Morgana</div>
+        <div class="rate-track">
+          <div class="ci" style="left:26.7%;width:54.5%"></div>
+          <div class="fill" style="width:55.6%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">56%</div>
+        <div class="rate-n">5W 4L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Spy: 4W 3L in 7 games — 57% (95% CI 25%–84%)" tabindex="0">
+        <div class="rate-label">Spy</div>
+        <div class="rate-track">
+          <div class="ci" style="left:25.0%;width:59.1%"></div>
+          <div class="fill" style="width:57.1%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">57%</div>
+        <div class="rate-n">4W 3L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Merlin: 1W 5L in 6 games — 17% (95% CI 3%–56%)" tabindex="0">
+        <div class="rate-label">Merlin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:3.0%;width:53.3%"></div>
+          <div class="fill" style="width:16.7%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">17%</div>
+        <div class="rate-n">1W 5L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Assassin: 2W 1L in 3 games — 67% (95% CI 21%–94%)" tabindex="0">
+        <div class="rate-label">Assassin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:20.8%;width:73.1%"></div>
+          <div class="fill" style="width:66.7%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">67%</div>
+        <div class="rate-n">2W 1L</div>
+      </div></div>
+        <div class="sizes">
+          <div class="size" data-tip="5p tables: 3W 10L — 23%" tabindex="0">
+            <div class="size-bar"><div style="height:23%"></div></div>
+            <div class="size-n">5p</div>
+            <div class="size-games">13g</div>
+          </div>
+          <div class="size thin" data-tip="6p tables: 5W 0L — 100% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:100%"></div></div>
+            <div class="size-n">6p</div>
+            <div class="size-games">5g</div>
+          </div>
+          <div class="size" data-tip="7p tables: 8W 11L — 42%" tabindex="0">
+            <div class="size-bar"><div style="height:42%"></div></div>
+            <div class="size-n">7p</div>
+            <div class="size-games">19g</div>
+          </div>
+          <div class="size" data-tip="8p tables: 5W 5L — 50%" tabindex="0">
+            <div class="size-bar"><div style="height:50%"></div></div>
+            <div class="size-n">8p</div>
+            <div class="size-games">10g</div>
+          </div>
+          <div class="size thin" data-tip="9p tables: 2W 1L — 67% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:67%"></div></div>
+            <div class="size-n">9p</div>
+            <div class="size-games">3g</div>
+          </div></div>
+      </article>
+      <article class="pcard">
+        <header>
+          <div>
+            <h3 class="pname">nabbina</h3>
+            <p class="pepithet">The Seer</p>
+          </div>
+          <div class="phero">
+            <span class="phero-num">52%</span>
+            <span class="phero-cap">12W 11L<br>
+              <span class="ci-text">CI 33%–71%</span></span>
+          </div>
+        </header>
+        <p class="pmeta"><span class="chip silver">Silver</span>
+           23 games · 3.1 h · joined 2026-09-12</p>
+        <div class="rates">
+      <div class="rate thin" data-side="res" data-tip="Merlin: 4W 3L in 7 games — 57% (95% CI 25%–84%)" tabindex="0">
+        <div class="rate-label">Merlin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:25.0%;width:59.1%"></div>
+          <div class="fill" style="width:57.1%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">57%</div>
+        <div class="rate-n">4W 3L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Morgana: 3W 2L in 5 games — 60% (95% CI 23%–88%)" tabindex="0">
+        <div class="rate-label">Morgana</div>
+        <div class="rate-track">
+          <div class="ci" style="left:23.1%;width:65.2%"></div>
+          <div class="fill" style="width:60.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">60%</div>
+        <div class="rate-n">3W 2L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Resistance: 3W 2L in 5 games — 60% (95% CI 23%–88%)" tabindex="0">
+        <div class="rate-label">Resistance</div>
+        <div class="rate-track">
+          <div class="ci" style="left:23.1%;width:65.2%"></div>
+          <div class="fill" style="width:60.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">60%</div>
+        <div class="rate-n">3W 2L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Assassin: 1W 2L in 3 games — 33% (95% CI 6%–79%)" tabindex="0">
+        <div class="rate-label">Assassin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:6.1%;width:73.1%"></div>
+          <div class="fill" style="width:33.3%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">33%</div>
+        <div class="rate-n">1W 2L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Percival: 0W 2L in 2 games — 0% (95% CI 0%–66%)" tabindex="0">
+        <div class="rate-label">Percival</div>
+        <div class="rate-track">
+          <div class="ci" style="left:0.0%;width:65.8%"></div>
+          <div class="fill" style="width:0.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">0%</div>
+        <div class="rate-n">0W 2L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Spy: 1W 0L in 1 games — 100% (95% CI 21%–100%)" tabindex="0">
+        <div class="rate-label">Spy</div>
+        <div class="rate-track">
+          <div class="ci" style="left:20.7%;width:79.3%"></div>
+          <div class="fill" style="width:100.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">100%</div>
+        <div class="rate-n">1W 0L</div>
+      </div></div>
+        <div class="sizes">
+          <div class="size thin" data-tip="5p tables: 3W 1L — 75% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:75%"></div></div>
+            <div class="size-n">5p</div>
+            <div class="size-games">4g</div>
+          </div>
+          <div class="size thin" data-tip="6p tables: 2W 1L — 67% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:67%"></div></div>
+            <div class="size-n">6p</div>
+            <div class="size-games">3g</div>
+          </div>
+          <div class="size" data-tip="7p tables: 7W 5L — 58%" tabindex="0">
+            <div class="size-bar"><div style="height:58%"></div></div>
+            <div class="size-n">7p</div>
+            <div class="size-games">12g</div>
+          </div>
+          <div class="size thin" data-tip="8p tables: 0W 3L — 0% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:0%"></div></div>
+            <div class="size-n">8p</div>
+            <div class="size-games">3g</div>
+          </div>
+          <div class="size thin" data-tip="9p tables: 0W 1L — 0% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:0%"></div></div>
+            <div class="size-n">9p</div>
+            <div class="size-games">1g</div>
+          </div></div>
+      </article>
+      <article class="pcard">
+        <header>
+          <div>
+            <h3 class="pname">saicha</h3>
+            <p class="pepithet">The Loiterer</p>
+          </div>
+          <div class="phero">
+            <span class="phero-num">41%</span>
+            <span class="phero-cap">25W 36L<br>
+              <span class="ci-text">CI 30%–54%</span></span>
+          </div>
+        </header>
+        <p class="pmeta"><span class="chip silver">Silver</span>
+           61 games · 32.3 h · joined 2020-07-24</p>
+        <div class="rates">
+      <div class="rate" data-side="res" data-tip="Resistance: 9W 14L in 23 games — 39% (95% CI 22%–59%)" tabindex="0">
+        <div class="rate-label">Resistance</div>
+        <div class="rate-track">
+          <div class="ci" style="left:22.2%;width:37.1%"></div>
+          <div class="fill" style="width:39.1%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">39%</div>
+        <div class="rate-n">9W 14L</div>
+      </div>
+      <div class="rate" data-side="spy" data-tip="Assassin: 9W 3L in 12 games — 75% (95% CI 47%–91%)" tabindex="0">
+        <div class="rate-label">Assassin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:46.8%;width:44.3%"></div>
+          <div class="fill" style="width:75.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">75%</div>
+        <div class="rate-n">9W 3L</div>
+      </div>
+      <div class="rate" data-side="spy" data-tip="Morgana: 5W 5L in 10 games — 50% (95% CI 24%–76%)" tabindex="0">
+        <div class="rate-label">Morgana</div>
+        <div class="rate-track">
+          <div class="ci" style="left:23.7%;width:52.7%"></div>
+          <div class="fill" style="width:50.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">50%</div>
+        <div class="rate-n">5W 5L</div>
+      </div>
+      <div class="rate" data-side="res" data-tip="Percival: 0W 8L in 8 games — 0% (95% CI 0%–32%)" tabindex="0">
+        <div class="rate-label">Percival</div>
+        <div class="rate-track">
+          <div class="ci" style="left:0.0%;width:32.4%"></div>
+          <div class="fill" style="width:0.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">0%</div>
+        <div class="rate-n">0W 8L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Merlin: 1W 3L in 4 games — 25% (95% CI 5%–70%)" tabindex="0">
+        <div class="rate-label">Merlin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:4.6%;width:65.4%"></div>
+          <div class="fill" style="width:25.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">25%</div>
+        <div class="rate-n">1W 3L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Spy: 1W 2L in 3 games — 33% (95% CI 6%–79%)" tabindex="0">
+        <div class="rate-label">Spy</div>
+        <div class="rate-track">
+          <div class="ci" style="left:6.1%;width:73.1%"></div>
+          <div class="fill" style="width:33.3%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">33%</div>
+        <div class="rate-n">1W 2L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Oberon: 0W 1L in 1 games — 0% (95% CI 0%–79%)" tabindex="0">
+        <div class="rate-label">Oberon</div>
+        <div class="rate-track">
+          <div class="ci" style="left:0.0%;width:79.3%"></div>
+          <div class="fill" style="width:0.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">0%</div>
+        <div class="rate-n">0W 1L</div>
+      </div></div>
+        <div class="sizes">
+          <div class="size thin" data-tip="10p tables: 3W 4L — 43% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:43%"></div></div>
+            <div class="size-n">10p</div>
+            <div class="size-games">7g</div>
+          </div>
+          <div class="size" data-tip="5p tables: 7W 6L — 54%" tabindex="0">
+            <div class="size-bar"><div style="height:54%"></div></div>
+            <div class="size-n">5p</div>
+            <div class="size-games">13g</div>
+          </div>
+          <div class="size thin" data-tip="6p tables: 0W 3L — 0% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:0%"></div></div>
+            <div class="size-n">6p</div>
+            <div class="size-games">3g</div>
+          </div>
+          <div class="size" data-tip="7p tables: 7W 9L — 44%" tabindex="0">
+            <div class="size-bar"><div style="height:44%"></div></div>
+            <div class="size-n">7p</div>
+            <div class="size-games">16g</div>
+          </div>
+          <div class="size" data-tip="8p tables: 5W 6L — 45%" tabindex="0">
+            <div class="size-bar"><div style="height:45%"></div></div>
+            <div class="size-n">8p</div>
+            <div class="size-games">11g</div>
+          </div>
+          <div class="size" data-tip="9p tables: 3W 8L — 27%" tabindex="0">
+            <div class="size-bar"><div style="height:27%"></div></div>
+            <div class="size-n">9p</div>
+            <div class="size-games">11g</div>
+          </div></div>
+      </article>
+      <article class="pcard">
+        <header>
+          <div>
+            <h3 class="pname">Vamsi541605</h3>
+            <p class="pepithet">Lost in the Crowd</p>
+          </div>
+          <div class="phero">
+            <span class="phero-num">44%</span>
+            <span class="phero-cap">7W 9L<br>
+              <span class="ci-text">CI 23%–67%</span></span>
+          </div>
+        </header>
+        <p class="pmeta"><span class="chip unranked">Unranked</span>
+           16 games · 2.5 h · joined 2026-09-09</p>
+        <div class="rates">
+      <div class="rate" data-side="res" data-tip="Resistance: 2W 6L in 8 games — 25% (95% CI 7%–59%)" tabindex="0">
+        <div class="rate-label">Resistance</div>
+        <div class="rate-track">
+          <div class="ci" style="left:7.1%;width:51.9%"></div>
+          <div class="fill" style="width:25.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">25%</div>
+        <div class="rate-n">2W 6L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Morgana: 1W 1L in 2 games — 50% (95% CI 9%–91%)" tabindex="0">
+        <div class="rate-label">Morgana</div>
+        <div class="rate-track">
+          <div class="ci" style="left:9.5%;width:81.1%"></div>
+          <div class="fill" style="width:50.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">50%</div>
+        <div class="rate-n">1W 1L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Merlin: 1W 1L in 2 games — 50% (95% CI 9%–91%)" tabindex="0">
+        <div class="rate-label">Merlin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:9.5%;width:81.1%"></div>
+          <div class="fill" style="width:50.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">50%</div>
+        <div class="rate-n">1W 1L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Assassin: 1W 1L in 2 games — 50% (95% CI 9%–91%)" tabindex="0">
+        <div class="rate-label">Assassin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:9.5%;width:81.1%"></div>
+          <div class="fill" style="width:50.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">50%</div>
+        <div class="rate-n">1W 1L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Spy: 1W 0L in 1 games — 100% (95% CI 21%–100%)" tabindex="0">
+        <div class="rate-label">Spy</div>
+        <div class="rate-track">
+          <div class="ci" style="left:20.7%;width:79.3%"></div>
+          <div class="fill" style="width:100.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">100%</div>
+        <div class="rate-n">1W 0L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Percival: 1W 0L in 1 games — 100% (95% CI 21%–100%)" tabindex="0">
+        <div class="rate-label">Percival</div>
+        <div class="rate-track">
+          <div class="ci" style="left:20.7%;width:79.3%"></div>
+          <div class="fill" style="width:100.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">100%</div>
+        <div class="rate-n">1W 0L</div>
+      </div></div>
+        <div class="sizes">
+          <div class="size" data-tip="7p tables: 4W 4L — 50%" tabindex="0">
+            <div class="size-bar"><div style="height:50%"></div></div>
+            <div class="size-n">7p</div>
+            <div class="size-games">8g</div>
+          </div>
+          <div class="size" data-tip="8p tables: 3W 5L — 38%" tabindex="0">
+            <div class="size-bar"><div style="height:38%"></div></div>
+            <div class="size-n">8p</div>
+            <div class="size-games">8g</div>
+          </div></div>
+      </article>
+      <article class="pcard">
+        <header>
+          <div>
+            <h3 class="pname">Raksbro</h3>
+            <p class="pepithet">The Understudy</p>
+          </div>
+          <div class="phero">
+            <span class="phero-num">44%</span>
+            <span class="phero-cap">4W 5L<br>
+              <span class="ci-text">CI 19%–73%</span></span>
+          </div>
+        </header>
+        <p class="pmeta"><span class="chip unranked">Unranked</span>
+           9 games · 1.6 h · joined 2026-09-11</p>
+        <div class="rates">
+      <div class="rate thin" data-side="res" data-tip="Resistance: 1W 2L in 3 games — 33% (95% CI 6%–79%)" tabindex="0">
+        <div class="rate-label">Resistance</div>
+        <div class="rate-track">
+          <div class="ci" style="left:6.1%;width:73.1%"></div>
+          <div class="fill" style="width:33.3%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">33%</div>
+        <div class="rate-n">1W 2L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Assassin: 2W 1L in 3 games — 67% (95% CI 21%–94%)" tabindex="0">
+        <div class="rate-label">Assassin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:20.8%;width:73.1%"></div>
+          <div class="fill" style="width:66.7%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">67%</div>
+        <div class="rate-n">2W 1L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Percival: 0W 1L in 1 games — 0% (95% CI 0%–79%)" tabindex="0">
+        <div class="rate-label">Percival</div>
+        <div class="rate-track">
+          <div class="ci" style="left:0.0%;width:79.3%"></div>
+          <div class="fill" style="width:0.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">0%</div>
+        <div class="rate-n">0W 1L</div>
+      </div>
+      <div class="rate thin" data-side="spy" data-tip="Spy: 1W 0L in 1 games — 100% (95% CI 21%–100%)" tabindex="0">
+        <div class="rate-label">Spy</div>
+        <div class="rate-track">
+          <div class="ci" style="left:20.7%;width:79.3%"></div>
+          <div class="fill" style="width:100.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">100%</div>
+        <div class="rate-n">1W 0L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Merlin: 0W 1L in 1 games — 0% (95% CI 0%–79%)" tabindex="0">
+        <div class="rate-label">Merlin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:0.0%;width:79.3%"></div>
+          <div class="fill" style="width:0.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">0%</div>
+        <div class="rate-n">0W 1L</div>
+      </div></div>
+        <div class="sizes">
+          <div class="size thin" data-tip="6p tables: 1W 0L — 100% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:100%"></div></div>
+            <div class="size-n">6p</div>
+            <div class="size-games">1g</div>
+          </div>
+          <div class="size thin" data-tip="7p tables: 2W 1L — 67% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:67%"></div></div>
+            <div class="size-n">7p</div>
+            <div class="size-games">3g</div>
+          </div>
+          <div class="size thin" data-tip="8p tables: 0W 2L — 0% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:0%"></div></div>
+            <div class="size-n">8p</div>
+            <div class="size-games">2g</div>
+          </div>
+          <div class="size thin" data-tip="9p tables: 1W 2L — 33% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:33%"></div></div>
+            <div class="size-n">9p</div>
+            <div class="size-games">3g</div>
+          </div></div>
+      </article>
+      <article class="pcard">
+        <header>
+          <div>
+            <h3 class="pname">Darthvader619</h3>
+            <p class="pepithet">The Newcomer</p>
+          </div>
+          <div class="phero">
+            <span class="phero-num">50%</span>
+            <span class="phero-cap">2W 2L<br>
+              <span class="ci-text">CI 15%–85%</span></span>
+          </div>
+        </header>
+        <p class="pmeta"><span class="chip unranked">Unranked</span>
+           4 games · 0.8 h · joined 2026-09-11</p>
+        <div class="rates">
+      <div class="rate thin" data-side="res" data-tip="Resistance: 2W 1L in 3 games — 67% (95% CI 21%–94%)" tabindex="0">
+        <div class="rate-label">Resistance</div>
+        <div class="rate-track">
+          <div class="ci" style="left:20.8%;width:73.1%"></div>
+          <div class="fill" style="width:66.7%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">67%</div>
+        <div class="rate-n">2W 1L</div>
+      </div>
+      <div class="rate thin" data-side="res" data-tip="Merlin: 0W 1L in 1 games — 0% (95% CI 0%–79%)" tabindex="0">
+        <div class="rate-label">Merlin</div>
+        <div class="rate-track">
+          <div class="ci" style="left:0.0%;width:79.3%"></div>
+          <div class="fill" style="width:0.0%"></div>
+          <div class="coinflip"></div>
+        </div>
+        <div class="rate-val">0%</div>
+        <div class="rate-n">0W 1L</div>
+      </div></div>
+        <div class="sizes">
+          <div class="size thin" data-tip="8p tables: 1W 1L — 50% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:50%"></div></div>
+            <div class="size-n">8p</div>
+            <div class="size-games">2g</div>
+          </div>
+          <div class="size thin" data-tip="9p tables: 1W 1L — 50% — too few games to read into" tabindex="0">
+            <div class="size-bar"><div style="height:50%"></div></div>
+            <div class="size-n">9p</div>
+            <div class="size-games">2g</div>
+          </div></div>
+      </article></div>
+  </section>
+
+  <section>
+    <h3>What this can't tell you</h3>
+    <div class="caveats">
+      <p><strong>No per-game history exists outside their server.</strong> ProAvalon stores
+        mission and vote history per game but exposes no route to read it — so who wins
+        <em>with</em> whom, who reads whom as Merlin, and how assassinations actually went
+        are unanswerable from here. Only cumulative per-player counters are public.</p>
+      <p><strong>These aren't only games against each other.</strong> Every figure counts a
+        player's whole ProAvalon record, including games with strangers.</p>
+      <p><strong>Faded means under-sampled.</strong> A 100% win rate over two games is not a
+        strength; its interval runs from roughly 34% to 100%.</p>
+      <p><strong>Overlapping intervals mean the gap isn't real yet.</strong> Two players ten
+        points apart at these sample sizes are, statistically, tied.</p>
+    </div>
+  </section>
+</div>
+
+<div id="tip" role="status"></div>
+<script>
+  (function () {
+    var tip = document.getElementById('tip');
+    function show(e) {
+      var el = e.target.closest('[data-tip]');
+      if (!el) return;
+      tip.textContent = el.getAttribute('data-tip');
+      tip.style.opacity = '1';
+      var r = el.getBoundingClientRect();
+      var x = (e.clientX || r.left + r.width / 2) + 14;
+      var y = (e.clientY || r.top) - 10;
+      tip.style.left = Math.min(x, window.innerWidth - tip.offsetWidth - 12) + 'px';
+      tip.style.top = Math.max(8, y - tip.offsetHeight) + 'px';
+    }
+    function hide() { tip.style.opacity = '0'; }
+    document.addEventListener('mousemove', function (e) {
+      e.target.closest('[data-tip]') ? show(e) : hide();
+    });
+    document.addEventListener('focusin', show);
+    document.addEventListener('focusout', hide);
+  })();
+
+  (function () {
+    var table = document.querySelector('.tablewrap table');
+    if (!table) return;
+    var tbody = table.tBodies[0];
+
+    function sortBy(th, col, type) {
+      var asc = th.getAttribute('aria-sort') !== 'ascending';
+      var rows = Array.prototype.slice.call(tbody.rows);
+      rows.sort(function (a, b) {
+        var x = a.cells[col].getAttribute('data-v');
+        var y = b.cells[col].getAttribute('data-v');
+        if (type === 'text') return asc ? x.localeCompare(y) : y.localeCompare(x);
+        return asc ? x - y : y - x;
+      });
+      rows.forEach(function (r, i) {
+        r.cells[0].textContent = i + 1;   // the # column is position, not identity
+        tbody.appendChild(r);
+      });
+      table.querySelectorAll('th').forEach(function (h) { h.removeAttribute('aria-sort'); });
+      th.setAttribute('aria-sort', asc ? 'ascending' : 'descending');
+    }
+
+    table.querySelectorAll('th button').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        sortBy(btn.parentNode, +btn.dataset.col, btn.dataset.type);
+      });
+    });
+    // The page ships sorted by rating, descending — say so in the header.
+    var rating = table.querySelector('th button[data-col="3"]');
+    if (rating) rating.parentNode.setAttribute('aria-sort', 'descending');
+  })();
+</script>

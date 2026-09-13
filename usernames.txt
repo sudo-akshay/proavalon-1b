@@ -1,0 +1,14 @@
+# One ProAvalon username per line. EXACT CASE — the API is case-sensitive
+# and a wrong-case name silently never responds.
+axehaybond
+loyalvillager123
+Srinivas
+logstark007
+Raksbro
+Darthvader619
+nabbina
+saicha
+Saiteja10
+lihitveer
+SandyK
+Vamsi541605
