@@ -5,7 +5,9 @@ Artifact CSP blocks fetch(), so all data is inlined at build time and the
 markup is rendered here rather than in JS — the page reads correctly even if
 its one tooltip script never runs.
 """
+import hashlib
 import json
+import re
 import sqlite3
 from datetime import datetime
 from string import Template
@@ -493,6 +495,15 @@ def build():
     OUT.write_text(html)
     (ROOT / "index.html").write_text(html)   # what GitHub Pages serves
     print(f"wrote {OUT} and index.html ({len(html):,} bytes, {len(players)} players)")
+
+    # Every run restamps the snapshot time, so compare the page with the stamp
+    # removed — otherwise an idle night produces a commit every 15 minutes.
+    body = re.sub(r"snapshot<br>[^<]*", "", html)
+    digest = hashlib.sha256(body.encode()).hexdigest()
+    marker = ROOT / ".content_hash"
+    changed = not marker.exists() or marker.read_text().strip() != digest
+    marker.write_text(digest)
+    print("content: changed" if changed else "content: unchanged")
 
 
 TEMPLATE = Template((ROOT / "template.html").read_text())
