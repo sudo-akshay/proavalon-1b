@@ -1,6 +1,10 @@
 #!/bin/bash
 # Snapshot every player, rebuild the page, and publish it if anything moved.
 # Pass --no-push to rebuild locally without touching GitHub.
+# launchd runs with a minimal PATH that has neither Homebrew's python3 (the one
+# this was built against) nor gh's git credential helper.
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
 cd "$(dirname "$0")" || exit 1
 mkdir -p logs
 

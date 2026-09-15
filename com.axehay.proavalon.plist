@@ -4,17 +4,30 @@
 <dict>
     <key>Label</key>
     <string>com.axehay.proavalon</string>
+
     <key>ProgramArguments</key>
     <array>
         <string>/Users/axehay/proavalon-dashboard/refresh.sh</string>
     </array>
-    <key>StartInterval</key>
-    <integer>900</integer>
+
+    <!-- 05:00 in the Mac's local timezone, which is IST (+0530).
+         If the Mac is asleep or off at 05:00, launchd runs the job once at
+         the next wake rather than skipping the day. -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>5</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <!-- Run once on install, so you can confirm it works without waiting. -->
     <key>RunAtLoad</key>
     <true/>
-    <key>StandardErrorPath</key>
-    <string>/Users/axehay/proavalon-dashboard/logs/launchd.err</string>
+
     <key>StandardOutPath</key>
     <string>/Users/axehay/proavalon-dashboard/logs/launchd.out</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/axehay/proavalon-dashboard/logs/launchd.err</string>
 </dict>
 </plist>
