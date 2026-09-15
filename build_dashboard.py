@@ -56,9 +56,9 @@ def last_known(conn, column):
     """
     rows = conn.execute(f"""
         SELECT username, {column} AS v, MAX(fetched_at) AS at
-        FROM snapshots WHERE {column} IS NOT NULL GROUP BY username
+        FROM snapshots WHERE {column} IS NOT NULL GROUP BY LOWER(username)
     """).fetchall()
-    return {r["username"]: (r["v"], r["at"]) for r in rows}
+    return {r["username"].lower(): (r["v"], r["at"]) for r in rows}
 
 
 def load():
@@ -68,12 +68,14 @@ def load():
     last_bracket = last_known(conn, "bracket")
     rows = conn.execute("""
         SELECT s.* FROM snapshots s
-        JOIN (SELECT username, MAX(fetched_at) m FROM snapshots GROUP BY username) t
-          ON s.username = t.username AND s.fetched_at = t.m
+        JOIN (SELECT LOWER(username) u, MAX(fetched_at) m
+              FROM snapshots GROUP BY LOWER(username)) t
+          ON LOWER(s.username) = t.u AND s.fetched_at = t.m
     """).fetchall()
     players = []
     for r in rows:
         u = json.loads(r["payload"])["userData"]
+        key = r["username"].lower()
         n, w = u["totalGamesPlayed"], u["totalWins"]
         res_w, res_l = u.get("totalResWins", 0), u.get("totalResLosses", 0)
         res_n = res_w + res_l
@@ -102,12 +104,12 @@ def load():
             "roles": sorted(((r, wl) for r, wl in roles.items() if sum(wl)),
                             key=lambda kv: -(kv[1][0] + kv[1][1])),
             "sizes": sorted((kv for kv in sizes.items() if sum(kv[1]))),
-            "rating": r["rating"] or last_rating.get(r["username"], (None, None))[0],
-            "bracket": (r["bracket"] or last_bracket.get(r["username"], (None,))[0]
+            "rating": r["rating"] or last_rating.get(key, (None, None))[0],
+            "bracket": (r["bracket"] or last_bracket.get(key, (None,))[0]
                         or "unranked"),
             "rating_at": (r["fetched_at"] if r["rating"] or r["bracket"]
-                          else (last_rating.get(r["username"])
-                                or last_bracket.get(r["username"])
+                          else (last_rating.get(key)
+                                or last_bracket.get(key)
                                 or (None, None))[1]),
             "hours": (r["time_played_s"] or 0) / 3600,
             "joined": u["dateJoined"][:10], "fetched": r["fetched_at"],
@@ -316,8 +318,9 @@ def group_aggregates(players):
     conn.row_factory = sqlite3.Row
     rows = conn.execute("""
         SELECT s.payload FROM snapshots s
-        JOIN (SELECT username, MAX(fetched_at) m FROM snapshots GROUP BY username) t
-          ON s.username = t.username AND s.fetched_at = t.m
+        JOIN (SELECT LOWER(username) u, MAX(fetched_at) m
+              FROM snapshots GROUP BY LOWER(username)) t
+          ON LOWER(s.username) = t.u AND s.fetched_at = t.m
     """).fetchall()
     roles, sizes = {}, {}
     for r in rows:

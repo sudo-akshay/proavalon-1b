@@ -32,8 +32,9 @@ def wilson(w, n, z=1.96):
 def latest(conn):
     rows = conn.execute("""
         SELECT s.* FROM snapshots s
-        JOIN (SELECT username, MAX(fetched_at) m FROM snapshots GROUP BY username) t
-          ON s.username = t.username AND s.fetched_at = t.m
+        JOIN (SELECT LOWER(username) u, MAX(fetched_at) m
+              FROM snapshots GROUP BY LOWER(username)) t
+          ON LOWER(s.username) = t.u AND s.fetched_at = t.m
     """).fetchall()
     return rows
 
