@@ -506,6 +506,9 @@ def build():
     marker = ROOT / ".content_hash"
     changed = not marker.exists() or marker.read_text().strip() != digest
     marker.write_text(digest)
+    # A marker file, so refresh.sh can stream its log live instead of
+    # capturing all output in a variable just to grep it at the end.
+    (ROOT / ".content_changed").write_text("1" if changed else "0")
     print("content: changed" if changed else "content: unchanged")
 
 

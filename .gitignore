@@ -3,3 +3,5 @@ stats.db
 *.pyc
 __pycache__/
 logs/
+.content_hash
+.content_changed

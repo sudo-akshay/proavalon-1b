@@ -155,6 +155,38 @@ def store(conn, username, data, fetched_at, rating=None, bracket=None, source=No
     return True
 
 
+def candidates(name, conn):
+    """Casings to try for a name, best guess first.
+
+    Players rename themselves and the API is case-sensitive, so a stale entry
+    in usernames.txt costs a 15s timeout and a missing player. Every casing we
+    have ever seen for this identity is worth a try before giving up.
+    """
+    seen = [name]
+    rows = conn.execute("""SELECT username, MAX(fetched_at) FROM snapshots
+                           WHERE LOWER(username) = ? GROUP BY username
+                           ORDER BY 2 DESC""", (name.lower(),)).fetchall()
+    for r in rows:
+        if r[0] not in seen:
+            seen.append(r[0])
+    for variant in (name.capitalize(), name.lower(), name.upper()):
+        if variant not in seen:
+            seen.append(variant)
+    return seen
+
+
+def rename_in_config(old, new):
+    """Keep usernames.txt pointing at the casing that actually resolves."""
+    path = ROOT / "usernames.txt"
+    lines = path.read_text().splitlines()
+    for i, line in enumerate(lines):
+        if line.strip() == old:
+            lines[i] = new
+            path.write_text("\n".join(lines) + "\n")
+            return True
+    return False
+
+
 def main():
     conn = sqlite3.connect(DB)
     conn.executescript(SCHEMA)
@@ -167,13 +199,24 @@ def main():
     fetched_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     ok = failed = 0
     for name in usernames():
-        try:
-            data = fetch(name)
-        except (urllib.error.URLError, TimeoutError, ValueError, json.JSONDecodeError) as e:
-            # A wrong-case or unknown username simply never responds.
-            print(f"  {name}: FAILED ({e}) — check exact capitalisation")
+        data, resolved = None, name
+        for attempt in candidates(name, conn):
+            try:
+                data = fetch(attempt)
+                resolved = attempt
+                break
+            except (urllib.error.URLError, TimeoutError, ValueError,
+                    json.JSONDecodeError):
+                continue
+        if data is None:
+            print(f"  {name}: FAILED — no casing of this name responds")
             failed += 1
             continue
+        if resolved != name:
+            moved = rename_in_config(name, resolved)
+            print(f"  {name}: renamed to {resolved}"
+                  f"{' (usernames.txt updated)' if moved else ''}")
+            name = resolved
         if name in fresh:
             rating, bracket = fresh[name]          # still current, no request needed
             source = "cached"
