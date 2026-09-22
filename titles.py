@@ -43,9 +43,19 @@ def clears_band(p):
 
 
 TITLES = [
+    # Clearing the coin-flip band is the only claim backed by significance, so
+    # it outranks the merely-extreme — but it cuts both ways, and a record
+    # proven to be *below* 50% must not inherit a name that reads as praise.
     dict(name="The Proven", seats=lambda p: p["games"],
-         text="{w}W {l}L over {g} games — far enough from 50% that luck does not explain it",
-         value=clears_band, dir="high", guard=lambda p, v: v > 0, thin=0, weight=1.6),
+         text="{w}W {l}L over {g} games — too far above 50% for luck to explain",
+         value=clears_band, dir="high",
+         guard=lambda p, v: v > 0 and p["wins"] / p["games"] > .5,
+         thin=0, weight=1.6),
+    dict(name="Cursed by the Numbers", seats=lambda p: p["games"],
+         text="{w}W {l}L over {g} games — too far below 50% to blame on luck",
+         value=clears_band, dir="high",
+         guard=lambda p, v: v > 0 and p["wins"] / p["games"] < .5,
+         thin=0, weight=1.6),
     dict(name="The Spymaster", seats=lambda p: p["spy_n"],
          text="wins {v:.0%} of {n} seats on the evil side",
          value=lambda p: p["spy"][2][0] if p["spy_n"] >= 10 else None,

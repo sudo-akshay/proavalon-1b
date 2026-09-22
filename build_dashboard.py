@@ -472,6 +472,10 @@ def build():
     roles, sizes = group_aggregates(players)
     outside = [p for p in players
                if abs(p["wins"] / p["games"] - .5) > 1.96 * sqrt(0.25 / p["games"])]
+    # Name the direction: sitting outside the band is not automatically good.
+    outside_desc = " and ".join(
+        f'{p["name"]} ({"above" if p["wins"] / p["games"] > .5 else "below"} it)'
+        for p in outside) or "nobody"
     stamp = datetime.fromisoformat(players[0]["fetched"]).astimezone()
     rating_dates = {p["rating_at"][:10] for p in players if p["rating_at"]}
     stale = rating_dates and max(rating_dates) < players[0]["fetched"][:10]
@@ -486,7 +490,7 @@ def build():
         funnel=funnel(players),
         n_outside=len(outside),
         rating_note=(f' · ratings as of {max(rating_dates)}' if stale else ""),
-        outside_names=" and ".join(p["name"] for p in outside) or "nobody",
+        outside_names=outside_desc,
         stamp=stamp.strftime("%d %b %Y, %H:%M"),
         n_players=len(players),
         total_games=sum(p["games"] for p in players),
